@@ -60,6 +60,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d77f7ec81a6d05a3abb01ab6eb7590f6083d08449fe5a1c8b1e620283546ccb7"
 
 [[package]]
+name = "index_vec"
+version = "0.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "74086667896a940438f2118212f313abba4aff3831fef6f4b17d02add5c8bb60"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "is-terminal"
 version = "0.4.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -339,6 +348,14 @@ dependencies = [
  "textwrap",
  "thiserror",
  "unicode-width",
+]
+
+[[package]]
+name = "wave_index"
+version = "0.1.0"
+dependencies = [
+ "index_vec",
+ "static_assertions",
 ]
 
 [[package]]
