@@ -9,6 +9,7 @@
 <!-- ROADMAP -->
 ## Roadmap (will be updated as we go)
 - [x] Write memory allocator.
+- [x] Implement compact_str and Span
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
