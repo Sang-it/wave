@@ -1,15 +1,11 @@
-<br />
-<div align="center">
-  <h3 align="center">Wave</h3>
-  <p align="center">
-    A multi paradigm language that comes with its whole ecosystem.
-    <br />
-</div>
+# Wave
+A multi paradigm language that comes with its whole ecosystem.
 
 <!-- ROADMAP -->
 ## Roadmap (will be updated as we go)
-- [x] Write memory allocator.
-- [x] Implement compact_str and Span
+- [x] Implement arena allocator.
+- [x] Implement compact-str and optimized span.
+- [x] Implement diagnostics system.
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments

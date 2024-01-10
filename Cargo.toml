@@ -10,9 +10,6 @@ license     = "MIT"
 homepage    = "https://github.com/Sang-it/wave"
 repository  = "https://github.com/Sang-it/wave"
 
-[workspace.lints.clippy]
-all = { level = "warn" }
-
 [workspace.dependencies]
 wave             = { version = "0.1.0", path = "crates/wave" }
 wave_ast         = { version = "0.1.0", path = "crates/wave_ast" }
