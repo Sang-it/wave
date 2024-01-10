@@ -1,0 +1,17 @@
+[package]
+name = "wave_allocator"
+version = "0.1.0"
+edition = "2021"
+authors.workspace = true
+description.workspace = true
+keywords.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[dependencies]
+bumpalo = { workspace = true, features = ["collections"] }
+serde   = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

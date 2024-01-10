@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members  = ["crates/*"]
+
+[workspace.package]
+authors     = ["Sangit <rux12@icloud.com>" ]
+description = "Wave is a multi paradigm language suite."
+keywords    = ["rust", "parser", "lexer"]
+license     = "MIT"
+homepage    = "https://github.com/Sang-it/wave"
+repository  = "https://github.com/Sang-it/wave"
+
+[workspace.lints.clippy]
+all = { level = "warn" }
+
+[workspace.dependencies]
+wave             = { version = "0.1.0", path = "crates/wave" }
+wave_ast         = { version = "0.1.0", path = "crates/wave_ast" }
+wave_allocator   = { version = "0.1.0", path = "crates/wave_allocator" }
+wave_lexer       = { version = "0.1.0", path = "crates/wave_lexer" }
+wave_span        = { version = "0.1.0", path = "crates/wave_span" }
+wave_diagnostics = { version = "0.1.0", path = "crates/wave_diagnostics" }
+
+bumpalo     = { version = "3.14.0" }
+compact_str = { version = "0.7.1" }
+serde       = { version = "1.0.195" }
+serde_json  = { version = "1.0.111" }
+thiserror   = { version = "1.0.56" }
+miette      = { version = "5.10.0", features = ["fancy-no-backtrace"] }
