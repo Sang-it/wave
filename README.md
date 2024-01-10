@@ -8,7 +8,7 @@
 
 <!-- ROADMAP -->
 ## Roadmap (will be updated as we go)
-- [ ] Write memory allocator.
+- [x] Write memory allocator.
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
