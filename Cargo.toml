@@ -6,6 +6,7 @@ members  = ["crates/*"]
 authors     = ["Sangit <rux12@icloud.com>" ]
 description = "Wave is a multi paradigm language suite."
 keywords    = ["rust", "parser", "lexer"]
+edition     = "2021"
 license     = "MIT"
 homepage    = "https://github.com/Sang-it/wave"
 repository  = "https://github.com/Sang-it/wave"
