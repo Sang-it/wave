@@ -339,6 +339,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "wave_ast"
+version = "0.1.0"
+dependencies = [
+ "wave_span",
+]
+
+[[package]]
 name = "wave_diagnostics"
 version = "0.1.0"
 dependencies = [
