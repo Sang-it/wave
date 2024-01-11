@@ -1,6 +1,6 @@
+mod byte_handlers;
 mod diagnostics;
 mod kind;
-mod number;
 mod string_builder;
 mod token;
 mod trivia_builder;
@@ -11,12 +11,15 @@ use wave_allocator::Allocator;
 use wave_diagnostics::Error;
 use wave_span::Span;
 use wave_syntax::{
-    identifier::{is_identifier_part, is_irregular_line_terminator, is_irregular_whitespace},
+    identifier::{
+        is_identifier_part, is_identifier_start_all, is_irregular_line_terminator,
+        is_irregular_whitespace,
+    },
     unicode_id_start::is_id_start_unicode,
 };
 
 use self::trivia_builder::TriviaBuilder;
-pub use self::{kind::Kind, number::parse_int, token::Token};
+pub use self::{kind::Kind, token::Token};
 
 #[derive(Debug, Clone)]
 pub struct LexerCheckpoint<'a> {
@@ -29,9 +32,9 @@ pub struct Lexer<'a> {
     allocator: &'a Allocator,
     source: &'a str,
     current: LexerCheckpoint<'a>,
-    pub(crate) errors: Vec<Error>,
+    pub errors: Vec<Error>,
     lookahead: VecDeque<LexerCheckpoint<'a>>,
-    pub(crate) trivia_builder: TriviaBuilder,
+    pub trivia_builder: TriviaBuilder,
 }
 
 impl<'a> Lexer<'a> {
@@ -75,6 +78,7 @@ impl<'a> Lexer<'a> {
         self.current = checkpoint;
         self.lookahead.clear();
     }
+
     pub fn lookahead(&mut self, n: u8) -> Token {
         let n = n as usize;
         debug_assert!(n > 0);
@@ -178,6 +182,16 @@ impl<'a> Lexer<'a> {
         self.identifier_tail(builder)
     }
 
+    pub fn next_token(&mut self) -> Token {
+        if let Some(checkpoint) = self.lookahead.pop_front() {
+            self.current.chars = checkpoint.chars;
+            self.current.errors_pos = checkpoint.errors_pos;
+            return checkpoint.token;
+        }
+        let kind = self.read_next_token();
+        self.finish_next(kind)
+    }
+
     fn identifier_name_handler(&mut self) -> &'a str {
         let builder = AutoCow::new(self);
         self.consume_char();
@@ -186,7 +200,11 @@ impl<'a> Lexer<'a> {
 
     #[inline]
     fn match_char(&mut self, c: char) -> Kind {
-        let _size = c as usize;
+        let size = c as usize;
+
+        if size < 128 {
+            return byte_handlers::BYTE_HANDLERS[size](self);
+        }
 
         match c {
             c if is_id_start_unicode(c) => {
@@ -221,5 +239,57 @@ impl<'a> Lexer<'a> {
 
     fn error<T: Into<Error>>(&mut self, error: T) {
         self.errors.push(error.into());
+    }
+
+    pub fn get_string(&self, token: Token) -> &'a str {
+        &self.source[token.start as usize..token.end as usize]
+    }
+
+    fn skip_irregular_whitespace(&mut self) -> Kind {
+        Kind::WhiteSpace
+    }
+
+    /// 12.9.3 Numeric Literals with `0` prefix
+    fn read_zero(&mut self, _builder: &mut AutoCow<'a>) -> Kind {
+        self.check_after_numeric_literal(Kind::Decimal)
+    }
+
+    fn check_after_numeric_literal(&mut self, kind: Kind) -> Kind {
+        let offset = self.offset();
+        // The SourceCharacter immediately following a NumericLiteral must not be an IdentifierStart or DecimalDigit.
+        let c = self.peek();
+        if c.is_none() || c.is_some_and(|ch| !ch.is_ascii_digit() && !is_identifier_start_all(ch)) {
+            return kind;
+        }
+        self.current.chars.next();
+        while let Some(c) = self.peek() {
+            if is_identifier_start_all(c) {
+                self.current.chars.next();
+            } else {
+                break;
+            }
+        }
+        self.error(diagnostics::InvalidNumberEnd(Span::new(
+            offset,
+            self.offset(),
+        )));
+        Kind::Undetermined
+    }
+
+    fn read_decimal_digits_after_first_digit(&mut self, builder: &mut AutoCow<'a>) {
+        while let Some(c) = self.peek() {
+            match c {
+                c @ '0'..='9' => {
+                    self.current.chars.next();
+                    builder.push_matching(c);
+                }
+                _ => break,
+            }
+        }
+    }
+
+    fn decimal_literal_after_first_digit(&mut self, builder: &mut AutoCow<'a>) -> Kind {
+        self.read_decimal_digits_after_first_digit(builder);
+        self.check_after_numeric_literal(Kind::Decimal)
     }
 }

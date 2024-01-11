@@ -12,6 +12,14 @@ pub enum Kind {
     WhiteSpace,
     Comment,
     MultiLineComment,
+    Let,
+    Eq,
+    Comma,
+    Semicolon,
+    Null,
+    True,
+    False,
+    Str,
 }
 
 use self::Kind::*;
@@ -21,8 +29,16 @@ impl Kind {
         matches!(self, Eof)
     }
 
+    pub fn is_literal(self) -> bool {
+        matches!(self, Null | True | False | Str) || self.is_number()
+    }
+
     pub fn is_number(self) -> bool {
         matches!(self, Decimal)
+    }
+
+    pub fn is_assignment_operator(self) -> bool {
+        matches!(self, Eq)
     }
 
     pub fn to_str(self) -> &'static str {
@@ -35,7 +51,27 @@ impl Kind {
             WhiteSpace => " ",
             Comment => "\\",
             MultiLineComment => "/** */",
+            Let => "let",
+            Eq => "=",
+            Comma => ",",
+            Semicolon => ";",
+            Null => "null",
+            True => "true",
+            False => "false",
+            Str => "String",
         }
+    }
+
+    pub fn is_binding_identifier(self) -> bool {
+        self.is_identifier()
+    }
+
+    pub fn is_identifier(self) -> bool {
+        self.is_identifier_name()
+    }
+
+    pub fn is_identifier_name(self) -> bool {
+        matches!(self, Ident)
     }
 }
 
