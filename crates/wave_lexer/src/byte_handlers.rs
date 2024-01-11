@@ -14,7 +14,7 @@ pub static BYTE_HANDLERS: [ByteHandler; 128] = [
     ZER, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, ERR, SEM, ERR, EQL, ERR, ERR, // 3
     ERR, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 4
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, ERR, ERR, ERR, ERR, IDT, // 5
-    ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, IDT, ERR, IDT, ERR, L_L, ERR, ERR, ERR, // 6
+    ERR, ERR, ERR, L_C, ERR, ERR, ERR, ERR, IDT, ERR, IDT, ERR, L_L, ERR, ERR, ERR, // 6
     ERR, IDT, ERR, ERR, ERR, ERR, ERR, ERR, IDT, ERR, IDT, ERR, ERR, ERR, ERR, ERR, // 7
 ];
 
@@ -34,11 +34,6 @@ const SPS: ByteHandler = |lexer| {
 const IDT: ByteHandler = |lexer| {
     lexer.identifier_name_handler();
     Kind::Ident
-};
-
-const L_L: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
-    "et" => Kind::Let,
-    _ => Kind::Ident,
 };
 
 // 0
@@ -67,4 +62,14 @@ const EQL: ByteHandler = |lexer| {
 const SEM: ByteHandler = |lexer| {
     lexer.consume_char();
     Kind::Semicolon
+};
+
+const L_L: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "et" => Kind::Let,
+    _ => Kind::Ident,
+};
+
+const L_C: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "onst" => Kind::Const,
+    _ => Kind::Ident,
 };

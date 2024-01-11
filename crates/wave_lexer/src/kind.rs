@@ -12,7 +12,10 @@ pub enum Kind {
     WhiteSpace,
     Comment,
     MultiLineComment,
+    //Declaration
     Let,
+    Const,
+
     Eq,
     Comma,
     Semicolon,
@@ -59,6 +62,7 @@ impl Kind {
             True => "true",
             False => "false",
             Str => "String",
+            Const => "const",
         }
     }
 
