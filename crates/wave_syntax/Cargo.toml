@@ -10,4 +10,7 @@ homepage.workspace = true
 repository.workspace = true
 
 [dependencies]
+wave_index = { workspace = true }
+
 unicode-id-start = { workspace = true }
+bitflags = { workspace = true }
