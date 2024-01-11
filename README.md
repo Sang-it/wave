@@ -1,11 +1,14 @@
 # Wave
-A multi paradigm language that comes with its whole ecosystem.
+An over-engineered multi paradigm language that comes with its whole ecosystem.
 
 <!-- ROADMAP -->
 ## Roadmap (will be updated as we go)
 - [x] Implement arena allocator.
 - [x] Implement compact-str and optimized span.
 - [x] Implement diagnostics system.
+- [x] Implement let statement parser
+- [x] Implement const statement parser
+- [ ] Implement binary operations
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
