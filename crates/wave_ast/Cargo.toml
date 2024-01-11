@@ -10,4 +10,6 @@ homepage.workspace = true
 repository.workspace = true
 
 [dependencies]
-wave_span = { workspace = true }
+wave_span      = { workspace = true }
+wave_allocator = { workspace = true }
+wave_syntax    = { workspace = true }
