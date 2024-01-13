@@ -1,6 +1,8 @@
+use bitflags::bitflags;
 use wave_index::define_index_type;
 
-use bitflags::bitflags;
+#[cfg(feature = "serde")]
+use serde::Serialize;
 
 define_index_type! {
     pub struct ReferenceId = u32;

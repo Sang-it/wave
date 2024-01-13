@@ -13,4 +13,9 @@ repository.workspace = true
 wave_index = { workspace = true }
 
 unicode-id-start = { workspace = true }
-bitflags = { workspace = true }
+bitflags         = { workspace = true }
+serde            = { workspace = true, features = ["derive"], optional = true }
+
+[features]
+default = []
+serde   = ["dep:serde", "bitflags/serde"]
