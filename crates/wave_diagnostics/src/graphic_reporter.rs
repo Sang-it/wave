@@ -1,8 +1,3 @@
-#![allow(clippy::must_use_candidate)]
-#![allow(clippy::pedantic)]
-#![allow(clippy::nursery)]
-#![allow(dead_code)]
-
 use std::fmt::{self, Write};
 
 use miette::{

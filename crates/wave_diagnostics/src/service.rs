@@ -6,7 +6,7 @@ use std::{
     sync::Arc,
 };
 
-use crate::{miette::NamedSource, Error, GraphicalReportHandler, MinifiedFileError, Severity};
+use crate::{miette::NamedSource, Error, GraphicalReportHandler, Severity};
 
 pub type DiagnosticTuple = (PathBuf, Vec<Error>);
 pub type DiagnosticSender = mpsc::Sender<Option<DiagnosticTuple>>;
@@ -98,7 +98,7 @@ impl DiagnosticService {
         let mut buf_writer = BufWriter::new(std::io::stdout());
         let handler = GraphicalReportHandler::new();
 
-        while let Ok(Some((path, diagnostics))) = self.receiver.recv() {
+        while let Ok(Some((_, diagnostics))) = self.receiver.recv() {
             let mut output = String::new();
             for diagnostic in diagnostics {
                 let severity = diagnostic.severity();
@@ -130,13 +130,7 @@ impl DiagnosticService {
                 handler
                     .render_report(&mut err, diagnostic.as_ref())
                     .unwrap();
-                // Skip large output and print only once
-                if err.lines().any(|line| line.len() >= 400) {
-                    let minified_diagnostic = Error::new(MinifiedFileError(path.clone()));
-                    err = format!("{minified_diagnostic:?}");
-                    output = err;
-                    break;
-                }
+
                 output.push_str(&err);
             }
             buf_writer.write_all(output.as_bytes()).unwrap();
