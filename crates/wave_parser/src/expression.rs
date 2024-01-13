@@ -80,7 +80,6 @@ impl<'a> Parser<'a> {
             let kind = self.cur_kind();
 
             let Some(left_precedence) = kind_to_precedence(kind) else {
-                dbg!(kind);
                 break;
             };
 
