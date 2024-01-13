@@ -1,6 +1,9 @@
 use miette::{SourceOffset, SourceSpan};
 use std::hash::{Hash, Hasher};
 
+#[cfg(feature = "serde")]
+use serde::Serialize;
+
 pub const SPAN: Span = Span::new(0, 0);
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

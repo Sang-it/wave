@@ -5,6 +5,9 @@ use std::{
     ops::Deref,
 };
 
+#[cfg(feature = "serde")]
+use serde::Serialize;
+
 #[derive(Clone, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Atom(CompactString);

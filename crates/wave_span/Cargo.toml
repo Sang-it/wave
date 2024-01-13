@@ -16,4 +16,4 @@ serde   = ["dep:serde", "compact_str/serde"]
 [dependencies]
 miette      = { workspace = true }
 compact_str = { workspace = true }
-serde = { workspace = true, features = ["derive"], optional = true }
+serde       = { workspace = true, features = ["derive"], optional = true }
