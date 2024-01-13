@@ -9,7 +9,12 @@ use wave_lexer::Kind;
 use wave_span::{Atom, Span};
 use wave_syntax::precedence::Precedence;
 
-use crate::{diagnostics, grammar::CoverGrammar, operator::map_assignment_operator, Parser};
+use crate::{
+    diagnostics,
+    grammar::CoverGrammar,
+    operator::{kind_to_precedence, map_assignment_operator, map_binary_operator},
+    Parser,
+};
 
 impl<'a> Parser<'a> {
     pub(crate) fn parse_identifier_kind(&mut self, kind: Kind) -> (Span, Atom) {
@@ -63,13 +68,47 @@ impl<'a> Parser<'a> {
 
     fn parse_binary_or_logical_expression_recursive(
         &mut self,
-        _lhs_span: Span,
+        lhs_span: Span,
         lhs: Expression<'a>,
-        _min_precedence: Precedence,
+        min_precedence: Precedence,
     ) -> Result<Expression<'a>> {
         // Pratt Parsing Algorithm
         // <https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html>
-        // TODO: implement
+        let mut lhs = lhs;
+
+        loop {
+            let kind = self.cur_kind();
+
+            let Some(left_precedence) = kind_to_precedence(kind) else {
+                dbg!(kind);
+                break;
+            };
+
+            let stop = if left_precedence.is_right_associative() {
+                left_precedence < min_precedence
+            } else {
+                left_precedence <= min_precedence
+            };
+
+            if stop {
+                break;
+            }
+
+            self.bump_any(); // bump operator
+            let rhs = self.parse_binary_or_logical_expression_base(left_precedence)?;
+
+            lhs = if kind.is_binary_operator() {
+                self.ast.binary_expression(
+                    self.end_span(lhs_span),
+                    lhs,
+                    map_binary_operator(kind),
+                    rhs,
+                )
+            } else {
+                break;
+            };
+        }
+
         Ok(lhs)
     }
 
@@ -91,7 +130,7 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_primary_expression(&mut self) -> Result<Expression<'a>> {
-        let span = self.start_span();
+        let _span = self.start_span();
 
         match &self.cur_kind() {
             Kind::Ident => self.parse_identifier_expression(), // fast path, keywords are checked at the end

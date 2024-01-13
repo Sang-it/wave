@@ -96,6 +96,7 @@ impl<'a> Parser<'a> {
         Ok(self.ast.program(span, statements))
     }
 
+
     fn unexpected(&mut self) -> Error {
         if self.cur_kind() == Kind::Undetermined {
             if let Some(error) = self.lexer.errors.pop() {

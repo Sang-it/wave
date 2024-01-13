@@ -16,7 +16,7 @@ impl<'a> Parser<'a> {
     ) -> Result<Statement<'a>> {
         match self.cur_kind() {
             Kind::Const => self.parse_variable_statement(stmt_ctx),
-            Kind::Let => self.parse_let(stmt_ctx),
+            Kind::Let => self.parse_variable_statement(stmt_ctx),
             _ => self.parse_expression_or_labeled_statement(),
         }
     }
@@ -32,6 +32,7 @@ impl<'a> Parser<'a> {
         span: Span,
         expression: Expression<'a>,
     ) -> Result<Statement<'a>> {
+        self.asi()?;
         Ok(self
             .ast
             .expression_statement(self.end_span(span), expression))
@@ -55,5 +56,11 @@ impl<'a> Parser<'a> {
         Ok(Statement::Declaration(Declaration::VariableDeclaration(
             decl,
         )))
+    }
+
+    fn parse_empty_statement(&mut self) -> Statement<'a> {
+        let span = self.start_span();
+        self.bump_any(); // bump `;`
+        self.ast.empty_statement(self.end_span(span))
     }
 }

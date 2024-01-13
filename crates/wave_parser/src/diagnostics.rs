@@ -23,3 +23,8 @@ pub struct UnexpectedToken(#[label] pub Span);
 #[error("Cannot assign to this expression")]
 #[diagnostic()]
 pub struct InvalidAssignment(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Expected a semicolon or an implicit semicolon after a statement, but found none")]
+#[diagnostic(help("Try insert a semicolon here"))]
+pub struct AutoSemicolonInsertion(#[label] pub Span);

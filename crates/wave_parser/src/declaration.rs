@@ -12,8 +12,8 @@ use wave_span::Span;
 #[derive(Clone, Debug, Copy, Eq, PartialEq)]
 pub enum VariableDeclarationParent {
     Statement,
+    Clause,
 }
-
 #[derive(Clone, Debug, Copy, Eq, PartialEq)]
 pub struct VariableDeclarationContext {
     pub parent: VariableDeclarationParent,
@@ -26,7 +26,7 @@ impl VariableDeclarationContext {
 }
 
 impl<'a> Parser<'a> {
-    pub(crate) fn parse_let(&mut self, stmt_ctx: StatementContext) -> Result<Statement<'a>> {
+    pub(crate) fn parse_let(&mut self, _stmt_ctx: StatementContext) -> Result<Statement<'a>> {
         let span = self.start_span();
         let expr = self.parse_identifier_expression()?;
         self.parse_expression_statement(span, expr)
@@ -49,6 +49,13 @@ impl<'a> Parser<'a> {
         let declaration = self.parse_variable_declarator(decl_ctx, kind)?;
         declarations.push(declaration);
 
+        if matches!(
+            decl_ctx.parent,
+            VariableDeclarationParent::Statement | VariableDeclarationParent::Clause
+        ) {
+            self.asi()?;
+        }
+
         Ok(self
             .ast
             .variable_declaration(self.end_span(start_span), kind, declarations))
@@ -56,7 +63,7 @@ impl<'a> Parser<'a> {
 
     fn parse_variable_declarator(
         &mut self,
-        decl_ctx: VariableDeclarationContext,
+        _decl_ctx: VariableDeclarationContext,
         kind: VariableDeclarationKind,
     ) -> Result<VariableDeclarator<'a>> {
         let span = self.start_span();

@@ -1,4 +1,5 @@
-use crate::Parser;
+use crate::{diagnostics, Parser};
+use wave_diagnostics::Result;
 use wave_lexer::{Kind, LexerCheckpoint, Token};
 use wave_span::Span;
 
@@ -85,5 +86,24 @@ impl<'a> Parser<'a> {
     /// Advance and change token type, useful for changing keyword to ident
     pub(crate) fn bump_remap(&mut self, kind: Kind) {
         self.advance(kind);
+    }
+
+    pub(crate) fn asi(&mut self) -> Result<()> {
+        if !self.can_insert_semicolon() {
+            let span = Span::new(self.prev_token_end, self.cur_token().start);
+            return Err(diagnostics::AutoSemicolonInsertion(span).into());
+        }
+        if self.at(Kind::Semicolon) {
+            self.advance(Kind::Semicolon);
+        }
+        Ok(())
+    }
+
+    pub(crate) fn can_insert_semicolon(&self) -> bool {
+        let kind = self.cur_kind();
+        if kind == Kind::Semicolon {
+            return true;
+        }
+        kind == Kind::RCurly || kind.is_eof() || self.cur_token().is_on_new_line
     }
 }

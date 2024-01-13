@@ -1,6 +1,16 @@
 [workspace]
 resolver = "2"
-members  = ["crates/*"]
+members  = [
+    "crates/wave_allocator",
+    "crates/wave_ast",
+    "crates/wave_lexer",
+    "crates/wave_span",
+    "crates/wave_diagnostics",
+    "crates/wave_syntax",
+    "crates/wave_index",
+    "crates/wave_parser",
+    "crates/wave"
+    ]
 
 [workspace.package]
 authors     = ["Sangit <rux12@icloud.com>" ]
@@ -27,9 +37,10 @@ compact_str       = { version = "0.7.1" }
 serde             = { version = "1.0.195" }
 serde_json        = { version = "1.0.111" }
 thiserror         = { version = "1.0.56" }
-miette            = { version = "5.10.0", features = ["fancy-no-backtrace"] }
+miette            = { version = "5.10.0", features = ["fancy"] }
 index_vec         = { version = "0.1.3" }
 static_assertions = { version = "1.1.0" }
 unicode-id-start  = { version = "1.1.2" }
 num-bigint        = { version = "0.4.4" }
 bitflags          = { version = "2.4.1" }
+ryu-js            = { version = "1.0.0" }
