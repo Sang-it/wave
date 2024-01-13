@@ -2,6 +2,9 @@ use std::hash::{Hash, Hasher};
 
 use wave_span::{Atom, Span};
 
+#[cfg(feature = "serde")]
+use serde::Serialize;
+
 #[derive(Debug, Clone, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
 pub struct BooleanLiteral {

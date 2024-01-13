@@ -13,3 +13,11 @@ repository.workspace = true
 wave_span      = { workspace = true }
 wave_allocator = { workspace = true }
 wave_syntax    = { workspace = true }
+
+serde      = { workspace = true, features = ["derive"], optional = true }
+serde_json = { workspace = true, optional = true }
+ryu-js     = { workspace = true, optional = true }
+
+[features]
+default  = []
+serde    = ["dep:serde", "dep:ryu-js" ,"dep:serde_json", "wave_span/serde", "wave_syntax/serde"]

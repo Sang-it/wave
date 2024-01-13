@@ -1,5 +1,8 @@
 use wave_span::{GetSpan, Span};
 
+#[cfg(feature = "serde")]
+use serde::Serialize;
+
 use crate::ast::Expression;
 
 impl<'a> GetSpan for Expression<'a> {
@@ -11,6 +14,7 @@ impl<'a> GetSpan for Expression<'a> {
             Self::StringLiteral(e) => e.span,
             Self::Identifier(e) => e.span,
             Self::AssignmentExpression(e) => e.span,
+            Self::BinaryExpression(e) => e.span,
         }
     }
 }

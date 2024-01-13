@@ -3,10 +3,13 @@ use std::{cell::Cell, fmt, hash::Hash};
 use wave_allocator::{Box, Vec};
 use wave_span::{Atom, Span};
 use wave_syntax::{
-    operator::AssignmentOperator,
+    operator::{AssignmentOperator, BinaryOperator},
     reference::{ReferenceFlag, ReferenceId},
     symbol::SymbolId,
 };
+
+#[cfg(feature = "serde")]
+use serde::Serialize;
 
 #[derive(Debug, Hash)]
 #[cfg_attr(
@@ -31,6 +34,7 @@ impl<'a> Program<'a> {
 pub enum Statement<'a> {
     Declaration(Declaration<'a>),
     ExpressionStatement(Box<'a, ExpressionStatement<'a>>),
+    EmptyStatement(Box<'a, EmptyStatement>),
 }
 
 #[derive(Debug, Hash)]
@@ -105,6 +109,7 @@ pub enum Expression<'a> {
     NumberLiteral(Box<'a, NumberLiteral<'a>>),
     StringLiteral(Box<'a, StringLiteral>),
     Identifier(Box<'a, IdentifierReference>),
+    BinaryExpression(Box<'a, BinaryExpression<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -225,4 +230,23 @@ impl IdentifierReference {
             reference_flag: ReferenceFlag::default(),
         }
     }
+}
+
+/// Empty Statement
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct EmptyStatement {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+}
+
+/// Binary Expression
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct BinaryExpression<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub left: Expression<'a>,
+    pub operator: BinaryOperator,
+    pub right: Expression<'a>,
 }

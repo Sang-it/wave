@@ -1,12 +1,12 @@
 use crate::ast::{
     AssignmentExpression, AssignmentTarget, BindingIdentifier, BindingPattern, BindingPatternKind,
-    Expression, ExpressionStatement, IdentifierReference, Program, Statement, VariableDeclaration,
-    VariableDeclarationKind, VariableDeclarator,
+    EmptyStatement, Expression, ExpressionStatement, IdentifierReference, Program, Statement,
+    VariableDeclaration, VariableDeclarationKind, VariableDeclarator, BinaryExpression,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
 use wave_span::Span;
-use wave_syntax::operator::AssignmentOperator;
+use wave_syntax::operator::{AssignmentOperator, BinaryOperator};
 
 pub struct AstBuilder<'a> {
     pub allocator: &'a Allocator,
@@ -117,5 +117,24 @@ impl<'a> AstBuilder<'a> {
 
     pub fn expression_statement(&self, span: Span, expression: Expression<'a>) -> Statement<'a> {
         Statement::ExpressionStatement(self.alloc(ExpressionStatement { span, expression }))
+    }
+
+    pub fn binary_expression(
+        &self,
+        span: Span,
+        left: Expression<'a>,
+        operator: BinaryOperator,
+        right: Expression<'a>,
+    ) -> Expression<'a> {
+        Expression::BinaryExpression(self.alloc(BinaryExpression {
+            span,
+            left,
+            operator,
+            right,
+        }))
+    }
+
+    pub fn empty_statement(&self, span: Span) -> Statement<'a> {
+        Statement::EmptyStatement(self.alloc(EmptyStatement { span }))
     }
 }
