@@ -16,6 +16,14 @@ pub enum Kind {
     Let,
     Const,
 
+    // Arithmetic Binary Operators
+    Plus,
+    Minus,
+    Star,
+    Slash,
+    Percent,
+    Star2,
+
     Eq,
     Comma,
     Semicolon,
@@ -23,6 +31,9 @@ pub enum Kind {
     True,
     False,
     Str,
+
+    // Brackets
+    RCurly,
 }
 
 use self::Kind::*;
@@ -63,6 +74,13 @@ impl Kind {
             False => "false",
             Str => "String",
             Const => "const",
+            RCurly => "}",
+            Plus => "+",
+            Minus => "-",
+            Star => "*",
+            Slash => "/",
+            Percent => "%",
+            Star2 => "**",
         }
     }
 
@@ -76,6 +94,11 @@ impl Kind {
 
     pub fn is_identifier_name(self) -> bool {
         matches!(self, Ident)
+    }
+
+    #[rustfmt::skip]
+    pub fn is_binary_operator(self) -> bool {
+        matches!(self, Plus | Minus | Star | Slash | Percent | Star2)
     }
 }
 

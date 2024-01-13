@@ -8,14 +8,14 @@ type ByteHandler = fn(&mut Lexer<'_>) -> Kind;
 #[rustfmt::skip]
 pub static BYTE_HANDLERS: [ByteHandler; 128] = [
 //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F    //
-    ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, SPS, ERR, SPS, SPS, ERR, ERR, ERR, // 0
+    ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, SPS, LIN, SPS, SPS, LIN, ERR, ERR, // 0
     ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, // 1
-    SPS, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, // 2
+    SPS, ERR, QOT, ERR, ERR, ERR, ERR, QOT, ERR, ERR, ATR, PLS, ERR, MIN, ERR, SLH, // 2
     ZER, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, ERR, SEM, ERR, EQL, ERR, ERR, // 3
     ERR, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 4
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, ERR, ERR, ERR, ERR, IDT, // 5
-    ERR, ERR, ERR, L_C, ERR, ERR, ERR, ERR, IDT, ERR, IDT, ERR, L_L, ERR, ERR, ERR, // 6
-    ERR, IDT, ERR, ERR, ERR, ERR, ERR, ERR, IDT, ERR, IDT, ERR, ERR, ERR, ERR, ERR, // 7
+    ERR, ERR, ERR, L_C, ERR, ERR, L_F, ERR, IDT, ERR, IDT, ERR, L_L, ERR, ERR, ERR, // 6
+    ERR, IDT, ERR, ERR, L_T, ERR, ERR, ERR, IDT, ERR, IDT, ERR, ERR, ERR, ERR, ERR, // 7
 ];
 
 const ERR: ByteHandler = |lexer| {
@@ -29,6 +29,13 @@ const SPS: ByteHandler = |lexer| {
     lexer.skip_irregular_whitespace();
     lexer.consume_char();
     Kind::WhiteSpace
+};
+
+// '\r' '\n'
+const LIN: ByteHandler = |lexer| {
+    lexer.consume_char();
+    lexer.current.token.is_on_new_line = true;
+    Kind::NewLine
 };
 
 const IDT: ByteHandler = |lexer| {
@@ -64,12 +71,66 @@ const SEM: ByteHandler = |lexer| {
     Kind::Semicolon
 };
 
+// ' "
+const QOT: ByteHandler = |lexer| {
+    let c = lexer.consume_char();
+    lexer.read_string_literal(c)
+};
+
+// +
+const PLS: ByteHandler = |lexer| {
+    lexer.consume_char();
+    Kind::Plus
+};
+
+// -
+const MIN: ByteHandler = |lexer| {
+    lexer.consume_char();
+    Kind::Minus
+};
+
+// /
+const SLH: ByteHandler = |lexer| {
+    lexer.consume_char();
+    match lexer.peek() {
+        Some('/') => {
+            lexer.current.chars.next();
+            lexer.skip_single_line_comment()
+        }
+        Some('*') => {
+            lexer.current.chars.next();
+            lexer.skip_multi_line_comment()
+        }
+        _ => Kind::Slash,
+    }
+};
+
+// *
+const ATR: ByteHandler = |lexer| {
+    lexer.consume_char();
+    if lexer.next_eq('*') {
+        Kind::Star2
+    } else {
+        Kind::Star
+    }
+};
+
+const L_C: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "onst" => Kind::Const,
+    _ => Kind::Ident,
+};
+
+const L_F: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "alse" => Kind::False,
+    _ => Kind::Ident,
+};
+
 const L_L: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     "et" => Kind::Let,
     _ => Kind::Ident,
 };
 
-const L_C: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
-    "onst" => Kind::Const,
+const L_T: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "rue" => Kind::True,
     _ => Kind::Ident,
 };

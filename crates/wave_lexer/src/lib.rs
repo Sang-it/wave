@@ -13,7 +13,7 @@ use wave_span::Span;
 use wave_syntax::{
     identifier::{
         is_identifier_part, is_identifier_start_all, is_irregular_line_terminator,
-        is_irregular_whitespace,
+        is_irregular_whitespace, is_line_terminator,
     },
     unicode_id_start::is_id_start_unicode,
 };
@@ -151,6 +151,15 @@ impl<'a> Lexer<'a> {
     #[inline]
     fn consume_char(&mut self) -> char {
         self.current.chars.next().unwrap()
+    }
+
+    #[inline]
+    fn next_eq(&mut self, c: char) -> bool {
+        let matched = self.peek() == Some(c);
+        if matched {
+            self.current.chars.next();
+        }
+        matched
     }
 
     /// Peek the next char without advancing the position
@@ -291,5 +300,60 @@ impl<'a> Lexer<'a> {
     fn decimal_literal_after_first_digit(&mut self, builder: &mut AutoCow<'a>) -> Kind {
         self.read_decimal_digits_after_first_digit(builder);
         self.check_after_numeric_literal(Kind::Decimal)
+    }
+
+    fn read_string_literal(&mut self, delimiter: char) -> Kind {
+        let mut builder = AutoCow::new(self);
+        loop {
+            match self.current.chars.next() {
+                None | Some('\r' | '\n') => {
+                    self.error(diagnostics::UnterminatedString(self.unterminated_range()));
+                    return Kind::Undetermined;
+                }
+                Some(c @ ('"' | '\'')) => {
+                    if c == delimiter {
+                        builder.finish_without_push(self);
+                        return Kind::Str;
+                    }
+                    builder.push_matching(c);
+                }
+                Some(c) => {
+                    builder.push_matching(c);
+                }
+            }
+        }
+    }
+
+    fn skip_single_line_comment(&mut self) -> Kind {
+        let start = self.current.token.start;
+        while let Some(c) = self.current.chars.next() {
+            if is_line_terminator(c) {
+                self.current.token.is_on_new_line = true;
+                self.trivia_builder
+                    .add_single_line_comment(start, self.offset() - c.len_utf8() as u32);
+                return Kind::Comment;
+            }
+        }
+        // EOF
+        self.trivia_builder
+            .add_single_line_comment(start, self.offset());
+        Kind::Comment
+    }
+
+    fn skip_multi_line_comment(&mut self) -> Kind {
+        while let Some(c) = self.current.chars.next() {
+            if c == '*' && self.next_eq('/') {
+                self.trivia_builder
+                    .add_multi_line_comment(self.current.token.start, self.offset());
+                return Kind::MultiLineComment;
+            }
+            if is_line_terminator(c) {
+                self.current.token.is_on_new_line = true;
+            }
+        }
+        self.error(diagnostics::UnterminatedMultiLineComment(
+            self.unterminated_range(),
+        ));
+        Kind::Eof
     }
 }
