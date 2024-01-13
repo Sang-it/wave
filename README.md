@@ -8,7 +8,9 @@ An over-engineered multi paradigm language that comes with its whole ecosystem.
 - [x] Implement diagnostics system.
 - [x] Implement let statement parser
 - [x] Implement const statement parser
-- [ ] Implement binary operations
+- [x] Implement binary operations
+- [ ] Implement control statments
+- [ ] Implement function declarations
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
