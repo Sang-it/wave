@@ -9,7 +9,7 @@ An over-engineered multi paradigm language that comes with its whole ecosystem.
 - [x] Implement let statement parser
 - [x] Implement const statement parser
 - [x] Implement binary operations
-- [ ] Implement control statments
+- [x] Implement control statments
 - [ ] Implement function declarations
 
 <!-- ACKNOWLEDGMENTS -->

@@ -28,3 +28,12 @@ pub struct InvalidAssignment(#[label] pub Span);
 #[error("Expected a semicolon or an implicit semicolon after a statement, but found none")]
 #[diagnostic(help("Try insert a semicolon here"))]
 pub struct AutoSemicolonInsertion(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Expected `{0}` but found `{1}`")]
+#[diagnostic()]
+pub struct ExpectToken(
+    pub &'static str,
+    pub &'static str,
+    #[label("`{0}` expected")] pub Span,
+);

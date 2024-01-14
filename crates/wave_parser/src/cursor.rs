@@ -99,6 +99,22 @@ impl<'a> Parser<'a> {
         Ok(())
     }
 
+    pub(crate) fn expect(&mut self, kind: Kind) -> Result<()> {
+        self.expect_without_advance(kind)?;
+        self.advance(kind);
+        Ok(())
+    }
+
+    pub(crate) fn expect_without_advance(&mut self, kind: Kind) -> Result<()> {
+        if !self.at(kind) {
+            let range = self.cur_token().span();
+            return Err(
+                diagnostics::ExpectToken(kind.to_str(), self.cur_kind().to_str(), range).into(),
+            );
+        }
+        Ok(())
+    }
+
     pub(crate) fn can_insert_semicolon(&self) -> bool {
         let kind = self.cur_kind();
         if kind == Kind::Semicolon {

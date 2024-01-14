@@ -236,4 +236,11 @@ impl<'a> Parser<'a> {
             symbol_id: Cell::default(),
         })
     }
+
+    pub(crate) fn parse_paren_expression(&mut self) -> Result<Expression<'a>> {
+        self.expect(Kind::LParen)?;
+        let expression = self.parse_expression()?;
+        self.expect(Kind::RParen)?;
+        Ok(expression)
+    }
 }

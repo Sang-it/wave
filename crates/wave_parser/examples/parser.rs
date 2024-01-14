@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::{fs::File, io::Write, path::Path};
 
 use wave_allocator::Allocator;
 use wave_parser::Parser;
@@ -10,8 +10,11 @@ fn main() {
     let allocator = Allocator::default();
     let ret = Parser::new(&allocator, &source_text).parse();
 
+    let parsed = serde_json::to_string_pretty(&ret.program).unwrap();
+
     if ret.errors.is_empty() {
-        println!("{}", serde_json::to_string_pretty(&ret.program).unwrap());
+        let mut f = File::create("foo.txt").unwrap();
+        f.write_all(parsed.as_bytes()).unwrap();
         println!("Parsed Successfully.");
     } else {
         for error in ret.errors {

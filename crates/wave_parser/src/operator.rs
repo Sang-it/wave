@@ -6,6 +6,7 @@ use wave_syntax::{
 
 pub fn kind_to_precedence(kind: Kind) -> Option<Precedence> {
     match kind {
+        Kind::Eq2 => Some(Precedence::Equality),
         Kind::Plus | Kind::Minus => Some(Precedence::Add),
         Kind::Star | Kind::Slash | Kind::Percent => Some(Precedence::Multiply),
         Kind::Star2 => Some(Precedence::Exponential),
@@ -23,6 +24,7 @@ pub fn map_assignment_operator(kind: Kind) -> AssignmentOperator {
 pub fn map_binary_operator(kind: Kind) -> BinaryOperator {
     match kind {
         Kind::Plus => BinaryOperator::Addition,
+        Kind::Eq2 => BinaryOperator::Equality,
         Kind::Minus => BinaryOperator::Subtraction,
         Kind::Star => BinaryOperator::Multiplication,
         Kind::Slash => BinaryOperator::Division,
