@@ -1,7 +1,8 @@
 use crate::ast::{
-    AssignmentExpression, AssignmentTarget, BindingIdentifier, BindingPattern, BindingPatternKind,
-    EmptyStatement, Expression, ExpressionStatement, IdentifierReference, Program, Statement,
-    VariableDeclaration, VariableDeclarationKind, VariableDeclarator, BinaryExpression,
+    AssignmentExpression, AssignmentTarget, BinaryExpression, BindingIdentifier, BindingPattern,
+    BindingPatternKind, BlockStatement, EmptyStatement, Expression, ExpressionStatement,
+    IdentifierReference, IfStatement, Program, Statement, VariableDeclaration,
+    VariableDeclarationKind, VariableDeclarator,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -131,6 +132,32 @@ impl<'a> AstBuilder<'a> {
             left,
             operator,
             right,
+        }))
+    }
+
+    pub fn if_statement(
+        &self,
+        span: Span,
+        test: Expression<'a>,
+        consequent: Statement<'a>,
+        alternate: Option<Statement<'a>>,
+    ) -> Statement<'a> {
+        Statement::IfStatement(self.alloc(IfStatement {
+            span,
+            test,
+            consequent,
+            alternate,
+        }))
+    }
+
+    pub fn block(&self, span: Span, body: Vec<'a, Statement<'a>>) -> Box<'a, BlockStatement<'a>> {
+        self.alloc(BlockStatement { span, body })
+    }
+
+    pub fn block_statement(&self, block: Box<'a, BlockStatement<'a>>) -> Statement<'a> {
+        Statement::BlockStatement(self.alloc(BlockStatement {
+            span: block.span,
+            body: block.unbox().body,
         }))
     }
 

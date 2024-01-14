@@ -35,6 +35,8 @@ pub enum Statement<'a> {
     Declaration(Declaration<'a>),
     ExpressionStatement(Box<'a, ExpressionStatement<'a>>),
     EmptyStatement(Box<'a, EmptyStatement>),
+    IfStatement(Box<'a, IfStatement<'a>>),
+    BlockStatement(Box<'a, BlockStatement<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -249,4 +251,24 @@ pub struct BinaryExpression<'a> {
     pub left: Expression<'a>,
     pub operator: BinaryOperator,
     pub right: Expression<'a>,
+}
+
+/// If Statement
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct IfStatement<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub test: Expression<'a>,
+    pub consequent: Statement<'a>,
+    pub alternate: Option<Statement<'a>>,
+}
+
+/// Block Statement
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct BlockStatement<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub body: Vec<'a, Statement<'a>>,
 }
