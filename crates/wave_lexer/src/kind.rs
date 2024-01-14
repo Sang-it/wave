@@ -25,6 +25,7 @@ pub enum Kind {
     Star2,
 
     Eq,
+    Eq2,
     Comma,
     Semicolon,
     Null,
@@ -32,7 +33,13 @@ pub enum Kind {
     False,
     Str,
 
+    If,
+    Else,
+
     // Brackets
+    LParen,
+    RParen,
+    LCurly,
     RCurly,
 }
 
@@ -74,13 +81,19 @@ impl Kind {
             False => "false",
             Str => "String",
             Const => "const",
-            RCurly => "}",
             Plus => "+",
             Minus => "-",
             Star => "*",
             Slash => "/",
             Percent => "%",
             Star2 => "**",
+            LParen => "(",
+            RParen => ")",
+            If => "if",
+            Else => "else",
+            LCurly => "{",
+            RCurly => "}",
+            Eq2 => "==",
         }
     }
 
@@ -98,7 +111,7 @@ impl Kind {
 
     #[rustfmt::skip]
     pub fn is_binary_operator(self) -> bool {
-        matches!(self, Plus | Minus | Star | Slash | Percent | Star2)
+        matches!(self, Plus | Minus | Star | Slash | Percent | Star2 | Eq2)
     }
 }
 
