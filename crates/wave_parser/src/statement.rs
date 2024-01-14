@@ -20,6 +20,7 @@ impl<'a> Parser<'a> {
             Kind::If => self.parse_if_statement(),
             Kind::Const => self.parse_variable_statement(stmt_ctx),
             Kind::Let => self.parse_variable_statement(stmt_ctx),
+            _ if self.at_function() => self.parse_function_declaration(stmt_ctx),
             _ => self.parse_expression_or_labeled_statement(),
         }
     }

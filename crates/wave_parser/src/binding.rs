@@ -15,4 +15,10 @@ impl<'a> Parser<'a> {
         self.parse_binding_identifier()
             .map(|ident| self.ast.binding_pattern_identifier(ident))
     }
+
+    pub(crate) fn parse_binding_pattern(&mut self) -> Result<BindingPattern<'a>> {
+        let span = self.start_span();
+        let pattern = self.parse_binding()?.0;
+        Ok(pattern)
+    }
 }

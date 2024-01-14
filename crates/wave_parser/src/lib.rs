@@ -4,7 +4,9 @@ mod cursor;
 mod declaration;
 mod diagnostics;
 mod expression;
+mod function;
 mod grammar;
+mod list;
 mod operator;
 mod statement;
 
@@ -75,27 +77,37 @@ impl<'a> Parser<'a> {
     fn parse_program(&mut self) -> Result<Program<'a>> {
         self.bump_any();
 
-        let mut statements = self.ast.new_vec();
-
-        while !self.at(Kind::Eof) {
-            let stmt = self.parse_statement_list_item(StatementContext::StatementList)?;
-
-            if let Statement::ExpressionStatement(expr) = &stmt {
-                if let Expression::StringLiteral(string) = &expr.expression {
-                    if expr.span.start == string.span.start {
-                        let _ = &self.source_text
-                            [string.span.start as usize + 1..string.span.end as usize - 1];
-                        continue;
-                    }
-                }
-            }
-            statements.push(stmt);
-        }
+        let statements = self.parse_statements()?;
 
         let span = Span::new(0, self.source_text.len() as u32);
         Ok(self.ast.program(span, statements))
     }
 
+    fn parse_statements(&mut self) -> Result<wave_allocator::Vec<'a, Statement<'a>>> {
+        let mut statements = self.ast.new_vec();
+
+        while !self.at(Kind::Eof) {
+            match self.cur_kind() {
+                Kind::RCurly => break,
+                _ => {
+                    let stmt = self.parse_statement_list_item(StatementContext::StatementList)?;
+
+                    if let Statement::ExpressionStatement(expr) = &stmt {
+                        if let Expression::StringLiteral(string) = &expr.expression {
+                            if expr.span.start == string.span.start {
+                                let _ = &self.source_text
+                                    [string.span.start as usize + 1..string.span.end as usize - 1];
+                                continue;
+                            }
+                        }
+                    }
+                    statements.push(stmt);
+                }
+            }
+        }
+
+        Ok(statements)
+    }
 
     fn unexpected(&mut self) -> Error {
         if self.cur_kind() == Kind::Undetermined {

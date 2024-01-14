@@ -37,3 +37,8 @@ pub struct ExpectToken(
     pub &'static str,
     #[label("`{0}` expected")] pub Span,
 );
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Expected function name")]
+#[diagnostic(help("Function name is required in function declaration or named export"))]
+pub struct ExpectFunctionName(#[label] pub Span);
