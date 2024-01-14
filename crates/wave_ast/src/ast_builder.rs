@@ -1,8 +1,9 @@
 use crate::ast::{
     AssignmentExpression, AssignmentTarget, BinaryExpression, BindingIdentifier, BindingPattern,
-    BindingPatternKind, BlockStatement, EmptyStatement, Expression, ExpressionStatement,
-    IdentifierReference, IfStatement, Program, Statement, VariableDeclaration,
-    VariableDeclarationKind, VariableDeclarator,
+    BindingPatternKind, BlockStatement, Declaration, EmptyStatement, Expression,
+    ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters, Function,
+    FunctionBody, FunctionType, IdentifierReference, IfStatement, Program, Statement,
+    VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -159,6 +160,48 @@ impl<'a> AstBuilder<'a> {
             span: block.span,
             body: block.unbox().body,
         }))
+    }
+
+    pub fn function_declaration(&self, func: Box<'a, Function<'a>>) -> Statement<'a> {
+        Statement::Declaration(Declaration::FunctionDeclaration(func))
+    }
+
+    pub fn formal_parameter(&self, span: Span, pattern: BindingPattern<'a>) -> FormalParameter<'a> {
+        FormalParameter { span, pattern }
+    }
+
+    pub fn formal_parameters(
+        &self,
+        span: Span,
+        kind: FormalParameterKind,
+        items: Vec<'a, FormalParameter<'a>>,
+    ) -> Box<'a, FormalParameters<'a>> {
+        self.alloc(FormalParameters { span, kind, items })
+    }
+
+    pub fn function(
+        &self,
+        r#type: FunctionType,
+        span: Span,
+        id: Option<BindingIdentifier>,
+        params: Box<'a, FormalParameters<'a>>,
+        body: Option<Box<'a, FunctionBody<'a>>>,
+    ) -> Box<'a, Function<'a>> {
+        self.alloc(Function {
+            r#type,
+            span,
+            id,
+            params,
+            body,
+        })
+    }
+
+    pub fn function_body(
+        &self,
+        span: Span,
+        statements: Vec<'a, Statement<'a>>,
+    ) -> Box<'a, FunctionBody<'a>> {
+        self.alloc(FunctionBody { span, statements })
     }
 
     pub fn empty_statement(&self, span: Span) -> Statement<'a> {
