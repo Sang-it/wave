@@ -1,11 +1,8 @@
-use serde::{ser::Serializer, Serialize};
-use std::fmt;
-
 use crate::ast::Program;
+use serde::Serialize;
 
 pub struct EcmaFormatter;
 
-/// Serialize f64 with `ryu_js`
 impl serde_json::ser::Formatter for EcmaFormatter {
     fn write_f64<W>(&mut self, writer: &mut W, value: f64) -> std::io::Result<()>
     where
@@ -25,12 +22,4 @@ impl<'a> Program<'a> {
         self.serialize(&mut ser).unwrap();
         String::from_utf8(ser.into_inner()).unwrap()
     }
-}
-
-pub fn serialize_bigint<T, S>(value: &T, s: S) -> Result<S::Ok, S::Error>
-where
-    T: fmt::Display,
-    S: serde::Serializer,
-{
-    s.collect_str(&format_args!("{value}n"))
 }

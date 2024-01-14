@@ -1,9 +1,9 @@
 use crate::ast::{
     AssignmentExpression, AssignmentTarget, BinaryExpression, BindingIdentifier, BindingPattern,
-    BindingPatternKind, BlockStatement, Declaration, EmptyStatement, Expression,
-    ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters, Function,
-    FunctionBody, FunctionType, IdentifierReference, IfStatement, Program, Statement,
-    VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
+    BindingPatternKind, BlockStatement, Declaration, Expression, ExpressionStatement,
+    FormalParameter, FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
+    IdentifierReference, IfStatement, Program, Statement, VariableDeclaration,
+    VariableDeclarationKind, VariableDeclarator,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -202,9 +202,5 @@ impl<'a> AstBuilder<'a> {
         statements: Vec<'a, Statement<'a>>,
     ) -> Box<'a, FunctionBody<'a>> {
         self.alloc(FunctionBody { span, statements })
-    }
-
-    pub fn empty_statement(&self, span: Span) -> Statement<'a> {
-        Statement::EmptyStatement(self.alloc(EmptyStatement { span }))
     }
 }

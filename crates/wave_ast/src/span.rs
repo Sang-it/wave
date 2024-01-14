@@ -1,8 +1,5 @@
 use wave_span::{GetSpan, Span};
 
-#[cfg(feature = "serde")]
-use serde::Serialize;
-
 use crate::ast::Expression;
 
 impl<'a> GetSpan for Expression<'a> {
