@@ -35,6 +35,7 @@ pub enum Kind {
 
     If,
     Else,
+    Function,
 
     // Brackets
     LParen,
@@ -94,6 +95,7 @@ impl Kind {
             LCurly => "{",
             RCurly => "}",
             Eq2 => "==",
+            Function => "function",
         }
     }
 

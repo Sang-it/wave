@@ -10,7 +10,7 @@ pub static BYTE_HANDLERS: [ByteHandler; 128] = [
 //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F    //
     ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, SPS, LIN, SPS, SPS, LIN, ERR, ERR, // 0
     ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, // 1
-    SPS, IDT, QOT, IDT, IDT, IDT, IDT, QOT, PNO, PNC, ATR, PLS, IDT, MIN, IDT, SLH, // 2
+    SPS, IDT, QOT, IDT, IDT, IDT, IDT, QOT, PNO, PNC, ATR, PLS, COM, MIN, IDT, SLH, // 2
     ZER, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, IDT, SEM, IDT, EQL, IDT, IDT, // 3
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 4
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 5
@@ -119,6 +119,11 @@ const ATR: ByteHandler = |lexer| {
     }
 };
 
+const COM: ByteHandler = |lexer| {
+    lexer.consume_char();
+    Kind::Comma
+};
+
 // (
 const PNO: ByteHandler = |lexer| {
     lexer.consume_char();
@@ -154,6 +159,7 @@ const L_E: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
 };
 
 const L_F: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "unction" => Kind::Function,
     "alse" => Kind::False,
     _ => Kind::Ident,
 };
