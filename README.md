@@ -18,7 +18,8 @@ Planned components:
 - [x] Implement control statments
 - [x] Implement function declarations
 - [x] Implement return statements
-- [ ] Implement array declarations
+- [x] Implement array declarations
+- [ ] Implement function call expressions
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
