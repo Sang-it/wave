@@ -52,6 +52,8 @@ pub enum Statement<'a> {
     BlockStatement(Box<'a, BlockStatement<'a>>),
     ReturnStatement(Box<'a, ReturnStatement<'a>>),
     WhileStatement(Box<'a, WhileStatement<'a>>),
+    BreakStatement(Box<'a, BreakStatement>),
+    ContinueStatement(Box<'a, ContinueStatement>),
 }
 
 #[derive(Debug, Hash)]
@@ -207,4 +209,20 @@ pub struct WhileStatement<'a> {
     pub span: Span,
     pub test: Expression<'a>,
     pub body: Statement<'a>,
+}
+
+/// Continue Statement
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct ContinueStatement {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+}
+
+/// Break Statement
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct BreakStatement {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
 }

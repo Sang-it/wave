@@ -1,12 +1,12 @@
 use crate::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, AssignmentExpression, AssignmentTarget,
     BinaryExpression, BindingIdentifier, BindingPattern, BindingPatternKind, BlockStatement,
-    CallExpression, Declaration, Expression, ExpressionStatement, FormalParameter,
-    FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
-    IdentifierReference, IfStatement, LogicalExpression, ParenthesizedExpression, Program,
-    ReturnStatement, SequenceExpression, SimpleAssignmentTarget, Statement, UnaryExpression,
-    UpdateExpression, VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
-    WhileStatement,
+    BreakStatement, CallExpression, ContinueStatement, Declaration, Expression,
+    ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters, Function,
+    FunctionBody, FunctionType, IdentifierReference, IfStatement, LogicalExpression,
+    ParenthesizedExpression, Program, ReturnStatement, SequenceExpression, SimpleAssignmentTarget,
+    Statement, UnaryExpression, UpdateExpression, VariableDeclaration, VariableDeclarationKind,
+    VariableDeclarator, WhileStatement,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -307,5 +307,13 @@ impl<'a> AstBuilder<'a> {
         body: Statement<'a>,
     ) -> Statement<'a> {
         Statement::WhileStatement(self.alloc(WhileStatement { span, test, body }))
+    }
+
+    pub fn break_statement(&self, span: Span) -> Statement<'a> {
+        Statement::BreakStatement(self.alloc(BreakStatement { span }))
+    }
+
+    pub fn continue_statement(&self, span: Span) -> Statement<'a> {
+        Statement::ContinueStatement(self.alloc(ContinueStatement { span }))
     }
 }
