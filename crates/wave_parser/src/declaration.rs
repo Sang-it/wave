@@ -1,10 +1,7 @@
 use crate::Parser;
-use crate::{context::StatementContext, diagnostics};
 
 use wave_allocator::Box;
-use wave_ast::ast::{
-    BindingPatternKind, Statement, VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
-};
+use wave_ast::ast::{VariableDeclaration, VariableDeclarationKind, VariableDeclarator};
 use wave_diagnostics::Result;
 use wave_lexer::Kind;
 use wave_span::Span;
@@ -26,12 +23,6 @@ impl VariableDeclarationContext {
 }
 
 impl<'a> Parser<'a> {
-    pub(crate) fn parse_let(&mut self, _stmt_ctx: StatementContext) -> Result<Statement<'a>> {
-        let span = self.start_span();
-        let expr = self.parse_identifier_expression()?;
-        self.parse_expression_statement(span, expr)
-    }
-
     pub(crate) fn parse_variable_declaration(
         &mut self,
         start_span: Span,

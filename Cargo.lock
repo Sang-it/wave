@@ -537,6 +537,7 @@ dependencies = [
 name = "wave_parser"
 version = "0.1.0"
 dependencies = [
+ "bitflags",
  "serde_json",
  "wave_allocator",
  "wave_ast",

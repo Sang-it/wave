@@ -1,4 +1,4 @@
-use crate::{diagnostics, Parser};
+use crate::{context::Context, diagnostics, Parser};
 use wave_diagnostics::Result;
 use wave_lexer::{Kind, LexerCheckpoint, Token};
 use wave_span::Span;
@@ -121,5 +121,19 @@ impl<'a> Parser<'a> {
             return true;
         }
         kind == Kind::RCurly || kind.is_eof() || self.cur_token().is_on_new_line
+    }
+
+    pub(crate) fn with_context<F, T>(&mut self, flags: Context, cb: F) -> T
+    where
+        F: FnOnce(&mut Self) -> T,
+    {
+        let context_flags_to_set = flags & !self.ctx;
+        if !context_flags_to_set.is_empty() {
+            self.ctx |= context_flags_to_set;
+            let result = cb(self);
+            self.ctx &= !context_flags_to_set;
+            return result;
+        }
+        cb(self)
     }
 }

@@ -42,3 +42,8 @@ pub struct ExpectToken(
 #[error("Expected function name")]
 #[diagnostic(help("Function name is required in function declaration or named export"))]
 pub struct ExpectFunctionName(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("TS1108: A 'return' statement can only be used within a function body")]
+#[diagnostic()]
+pub struct ReturnStatementOnlyInFunctionBody(#[label] pub Span);

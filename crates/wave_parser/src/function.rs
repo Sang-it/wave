@@ -10,7 +10,7 @@ use wave_lexer::Kind;
 use wave_span::Span;
 
 use crate::{
-    context::StatementContext,
+    context::{Context, StatementContext},
     diagnostics,
     list::{FormalParameterList, SeparatedList},
     Parser,
@@ -63,7 +63,7 @@ impl<'a> Parser<'a> {
     pub(crate) fn parse_function_body(&mut self) -> Result<Box<'a, FunctionBody<'a>>> {
         let span = self.start_span();
         self.expect(Kind::LCurly)?;
-        let statements = self.parse_statements()?;
+        let statements = self.with_context(Context::Return, |p| p.parse_statements())?;
         self.expect(Kind::RCurly)?;
         Ok(self.ast.function_body(self.end_span(span), statements))
     }
@@ -120,4 +120,3 @@ impl<'a> Parser<'a> {
         id
     }
 }
-

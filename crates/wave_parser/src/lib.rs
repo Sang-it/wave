@@ -10,7 +10,7 @@ mod list;
 mod operator;
 mod statement;
 
-use context::StatementContext;
+use context::{Context, StatementContext};
 use wave_allocator::Allocator;
 use wave_ast::{
     ast::{Expression, Program, Statement},
@@ -33,6 +33,7 @@ pub struct Parser<'a> {
     source_text: &'a str,
     errors: Vec<Error>,
     token: Token,
+    ctx: Context,
     prev_token_end: u32,
     ast: AstBuilder<'a>,
 }
@@ -45,6 +46,7 @@ impl<'a> Parser<'a> {
             errors: vec![],
             token: Token::default(),
             prev_token_end: 0,
+            ctx: Context::default(),
             ast: AstBuilder::new(allocator),
         }
     }
@@ -81,32 +83,6 @@ impl<'a> Parser<'a> {
 
         let span = Span::new(0, self.source_text.len() as u32);
         Ok(self.ast.program(span, statements))
-    }
-
-    fn parse_statements(&mut self) -> Result<wave_allocator::Vec<'a, Statement<'a>>> {
-        let mut statements = self.ast.new_vec();
-
-        while !self.at(Kind::Eof) {
-            match self.cur_kind() {
-                Kind::RCurly => break,
-                _ => {
-                    let stmt = self.parse_statement_list_item(StatementContext::StatementList)?;
-
-                    if let Statement::ExpressionStatement(expr) = &stmt {
-                        if let Expression::StringLiteral(string) = &expr.expression {
-                            if expr.span.start == string.span.start {
-                                let _ = &self.source_text
-                                    [string.span.start as usize + 1..string.span.end as usize - 1];
-                                continue;
-                            }
-                        }
-                    }
-                    statements.push(stmt);
-                }
-            }
-        }
-
-        Ok(statements)
     }
 
     fn unexpected(&mut self) -> Error {
