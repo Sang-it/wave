@@ -15,7 +15,7 @@ pub static BYTE_HANDLERS: [ByteHandler; 128] = [
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 4
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 5
     IDT, IDT, IDT, L_C, IDT, L_E, L_F, IDT, IDT, L_I, IDT, IDT, L_L, IDT, IDT, IDT, // 6
-    IDT, IDT, IDT, IDT, L_T, IDT, IDT, IDT, IDT, IDT, IDT, BEO, IDT, BEC, IDT, ERR, // 7
+    IDT, IDT, L_R, IDT, L_T, IDT, IDT, IDT, IDT, IDT, IDT, BEO, IDT, BEC, IDT, ERR, // 7
 ];
 
 const ERR: ByteHandler = |lexer| {
@@ -176,5 +176,10 @@ const L_L: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
 
 const L_T: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     "rue" => Kind::True,
+    _ => Kind::Ident,
+};
+
+const L_R: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "eturn" => Kind::Return,
     _ => Kind::Ident,
 };
