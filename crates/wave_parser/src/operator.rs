@@ -13,7 +13,7 @@ pub fn kind_to_precedence(kind: Kind) -> Option<Precedence> {
         Kind::Pipe => Some(Precedence::BitwiseOr),
         Kind::Caret => Some(Precedence::BitwiseXor),
         Kind::Amp => Some(Precedence::BitwiseAnd),
-        Kind::Eq2 => Some(Precedence::Equality),
+        Kind::Eq2 | Kind::Neq => Some(Precedence::Equality),
         Kind::Plus | Kind::Minus => Some(Precedence::Add),
         Kind::Star | Kind::Slash | Kind::Percent => Some(Precedence::Multiply),
         Kind::LAngle | Kind::RAngle | Kind::LtEq | Kind::GtEq => Some(Precedence::Relational),
@@ -43,13 +43,13 @@ pub fn map_assignment_operator(kind: Kind) -> AssignmentOperator {
 pub fn map_binary_operator(kind: Kind) -> BinaryOperator {
     match kind {
         Kind::Plus => BinaryOperator::Addition,
+        Kind::Neq => BinaryOperator::Inequality,
         Kind::Eq2 => BinaryOperator::Equality,
         Kind::Minus => BinaryOperator::Subtraction,
         Kind::Star => BinaryOperator::Multiplication,
         Kind::Slash => BinaryOperator::Division,
         Kind::Percent => BinaryOperator::Remainder,
         Kind::Star2 => BinaryOperator::Exponential,
-        Kind::Neq => BinaryOperator::Inequality,
         Kind::LAngle => BinaryOperator::LessThan,
         Kind::LtEq => BinaryOperator::LessEqualThan,
         Kind::RAngle => BinaryOperator::GreaterThan,
@@ -65,6 +65,7 @@ pub fn map_unary_operator(kind: Kind) -> UnaryOperator {
     match kind {
         Kind::Minus => UnaryOperator::UnaryNegation,
         Kind::Plus => UnaryOperator::UnaryPlus,
+        Kind::Bang => UnaryOperator::LogicalNot,
         _ => unreachable!("Unary Operator: {kind:?}"),
     }
 }
