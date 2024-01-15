@@ -19,7 +19,9 @@ Planned components:
 - [x] Implement function declarations
 - [x] Implement return statements
 - [x] Implement array declarations
-- [ ] Implement function call expressions
+- [x] Implement function call expressions
+- [x] Implement unary, unary update and logical expressions
+- [ ] Implement member expressions
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
