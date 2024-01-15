@@ -61,6 +61,7 @@ pub enum Kind {
     RBrack,
     Plus2,
     Minus2,
+    Bang,
 }
 
 use self::Kind::*;
@@ -137,6 +138,7 @@ impl Kind {
             RBrack => "]",
             Plus2 => "++",
             Minus2 => "--",
+            Bang => "!",
         }
     }
 
@@ -153,7 +155,7 @@ impl Kind {
     }
 
     pub fn is_unary_operator(self) -> bool {
-        matches!(self, Minus | Plus)
+        matches!(self, Minus | Plus | Bang)
     }
 
     pub fn is_update_operator(self) -> bool {
