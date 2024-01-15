@@ -12,18 +12,14 @@ pub enum Kind {
     WhiteSpace,
     Comment,
     MultiLineComment,
-    //Declaration
     Let,
     Const,
-
-    // Arithmetic Binary Operators
     Plus,
     Minus,
     Star,
     Slash,
     Percent,
     Star2,
-
     Eq,
     Eq2,
     Comma,
@@ -32,17 +28,35 @@ pub enum Kind {
     True,
     False,
     Str,
-
     If,
     Else,
     Function,
     Return,
-
-    // Brackets
     LParen,
     RParen,
     LCurly,
     RCurly,
+    Neq,
+    LAngle,
+    LtEq,
+    RAngle,
+    GtEq,
+    PlusEq,
+    MinusEq,
+    StarEq,
+    SlashEq,
+    PercentEq,
+    Amp2Eq,
+    Amp2,
+    Amp,
+    Pipe2,
+    Pipe,
+    PipeEq,
+    AmpEq,
+    Pipe2Eq,
+    Star2Eq,
+    Caret,
+    CaretEq,
 }
 
 use self::Kind::*;
@@ -58,10 +72,6 @@ impl Kind {
 
     pub fn is_number(self) -> bool {
         matches!(self, Decimal)
-    }
-
-    pub fn is_assignment_operator(self) -> bool {
-        matches!(self, Eq)
     }
 
     pub fn to_str(self) -> &'static str {
@@ -98,6 +108,27 @@ impl Kind {
             Eq2 => "==",
             Function => "function",
             Return => "return",
+            Neq => "!=",
+            LAngle => "<",
+            LtEq => "<=",
+            RAngle => ">",
+            GtEq => ">=",
+            PlusEq => "+=",
+            MinusEq => "-=",
+            StarEq => "*=",
+            SlashEq => "/=",
+            PercentEq => "%=",
+            Amp2Eq => "&&=",
+            Pipe2Eq => "||=",
+            Star2Eq => "**=",
+            Amp2 => "&&",
+            Amp => "&",
+            Pipe2 => "||",
+            Pipe => "|",
+            Caret => "^",
+            CaretEq => "^=",
+            AmpEq => "&=",
+            PipeEq => "|=",
         }
     }
 
@@ -115,7 +146,16 @@ impl Kind {
 
     #[rustfmt::skip]
     pub fn is_binary_operator(self) -> bool {
-        matches!(self, Plus | Minus | Star | Slash | Percent | Star2 | Eq2)
+        matches!(self, Eq2   | Neq    | LAngle | LtEq  | RAngle  | GtEq |
+                       Plus  | Minus  | Star   | Slash | Percent
+                                      | Star2)
+    }
+
+    #[rustfmt::skip]
+    pub fn is_assignment_operator(self) -> bool {
+        matches!(self, Eq  | PlusEq   | MinusEq | StarEq  | SlashEq | PercentEq
+                           | Pipe2Eq  | Amp2Eq  | CaretEq | AmpEq   | PipeEq
+                           | Star2Eq)
     }
 }
 

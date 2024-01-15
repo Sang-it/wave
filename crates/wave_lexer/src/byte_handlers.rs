@@ -10,12 +10,12 @@ pub static BYTE_HANDLERS: [ByteHandler; 128] = [
 //  0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F    //
     ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, SPS, LIN, SPS, SPS, LIN, ERR, ERR, // 0
     ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, ERR, // 1
-    SPS, IDT, QOT, IDT, IDT, IDT, IDT, QOT, PNO, PNC, ATR, PLS, COM, MIN, IDT, SLH, // 2
-    ZER, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, IDT, SEM, IDT, EQL, IDT, IDT, // 3
+    SPS, IDT, QOT, IDT, IDT, PRC, AMP, QOT, PNO, PNC, ATR, PLS, COM, MIN, IDT, SLH, // 2
+    ZER, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, IDT, SEM, LSS, EQL, GTR, IDT, // 3
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 4
-    IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 5
+    IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, CRT, IDT, // 5
     IDT, IDT, IDT, L_C, IDT, L_E, L_F, IDT, IDT, L_I, IDT, IDT, L_L, IDT, IDT, IDT, // 6
-    IDT, IDT, L_R, IDT, L_T, IDT, IDT, IDT, IDT, IDT, IDT, BEO, IDT, BEC, IDT, ERR, // 7
+    IDT, IDT, L_R, IDT, L_T, IDT, IDT, IDT, IDT, IDT, IDT, BEO, PIP, BEC, IDT, ERR, // 7
 ];
 
 const ERR: ByteHandler = |lexer| {
@@ -59,6 +59,37 @@ const DIG: ByteHandler = |lexer| {
     lexer.decimal_literal_after_first_digit(&mut builder)
 };
 
+// <
+const LSS: ByteHandler = |lexer| {
+    lexer.consume_char();
+    if lexer.next_eq('=') {
+        Kind::LtEq
+    } else {
+        Kind::LAngle
+    }
+};
+
+// >
+const GTR: ByteHandler = |lexer| {
+    lexer.consume_char();
+    if lexer.next_eq('=') {
+        Kind::GtEq
+    } else {
+        Kind::RAngle
+    }
+};
+
+// %
+const PRC: ByteHandler = |lexer| {
+    lexer.consume_char();
+    lexer.consume_char();
+    if lexer.next_eq('=') {
+        Kind::PercentEq
+    } else {
+        Kind::Percent
+    }
+};
+
 // = ==
 const EQL: ByteHandler = |lexer| {
     lexer.consume_char();
@@ -84,13 +115,21 @@ const QOT: ByteHandler = |lexer| {
 // +
 const PLS: ByteHandler = |lexer| {
     lexer.consume_char();
-    Kind::Plus
+    if lexer.next_eq('=') {
+        Kind::PlusEq
+    } else {
+        Kind::Plus
+    }
 };
 
 // -
 const MIN: ByteHandler = |lexer| {
     lexer.consume_char();
-    Kind::Minus
+    if lexer.next_eq('=') {
+        Kind::MinusEq
+    } else {
+        Kind::Minus
+    }
 };
 
 // /
@@ -105,7 +144,13 @@ const SLH: ByteHandler = |lexer| {
             lexer.current.chars.next();
             lexer.skip_multi_line_comment()
         }
-        _ => Kind::Slash,
+        _ => {
+            if lexer.next_eq('=') {
+                Kind::SlashEq
+            } else {
+                Kind::Slash
+            }
+        }
     }
 };
 
@@ -114,8 +159,52 @@ const ATR: ByteHandler = |lexer| {
     lexer.consume_char();
     if lexer.next_eq('*') {
         Kind::Star2
+    } else if lexer.next_eq('=') {
+        Kind::StarEq
     } else {
         Kind::Star
+    }
+};
+
+// &
+const AMP: ByteHandler = |lexer| {
+    lexer.consume_char();
+    if lexer.next_eq('&') {
+        if lexer.next_eq('=') {
+            Kind::Amp2Eq
+        } else {
+            Kind::Amp2
+        }
+    } else if lexer.next_eq('=') {
+        Kind::AmpEq
+    } else {
+        Kind::Amp
+    }
+};
+
+// |
+const PIP: ByteHandler = |lexer| {
+    lexer.consume_char();
+    if lexer.next_eq('|') {
+        if lexer.next_eq('=') {
+            Kind::Pipe2Eq
+        } else {
+            Kind::Pipe2
+        }
+    } else if lexer.next_eq('=') {
+        Kind::PipeEq
+    } else {
+        Kind::Pipe
+    }
+};
+
+// ^
+const CRT: ByteHandler = |lexer| {
+    lexer.consume_char();
+    if lexer.next_eq('=') {
+        Kind::CaretEq
+    } else {
+        Kind::Caret
     }
 };
 
