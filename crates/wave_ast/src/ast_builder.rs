@@ -1,10 +1,10 @@
 use crate::ast::{
-    AssignmentExpression, AssignmentTarget, BinaryExpression, BindingIdentifier, BindingPattern,
-    BindingPatternKind, BlockStatement, Declaration, Expression, ExpressionStatement,
-    FormalParameter, FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
-    IdentifierReference, IfStatement, ParenthesizedExpression, Program, ReturnStatement,
-    SequenceExpression, Statement, VariableDeclaration, VariableDeclarationKind,
-    VariableDeclarator,
+    ArrayExpression, ArrayExpressionElement, AssignmentExpression, AssignmentTarget,
+    BinaryExpression, BindingIdentifier, BindingPattern, BindingPatternKind, BlockStatement,
+    Declaration, Expression, ExpressionStatement, FormalParameter, FormalParameterKind,
+    FormalParameters, Function, FunctionBody, FunctionType, IdentifierReference, IfStatement,
+    ParenthesizedExpression, Program, ReturnStatement, SequenceExpression, Statement,
+    VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -225,5 +225,18 @@ impl<'a> AstBuilder<'a> {
         Expression::ParenthesizedExpression(
             self.alloc(ParenthesizedExpression { span, expression }),
         )
+    }
+
+    pub fn array_expression(
+        &self,
+        span: Span,
+        elements: Vec<'a, ArrayExpressionElement<'a>>,
+        trailing_comma: Option<Span>,
+    ) -> Expression<'a> {
+        Expression::ArrayExpression(self.alloc(ArrayExpression {
+            span,
+            elements,
+            trailing_comma,
+        }))
     }
 }

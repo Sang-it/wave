@@ -70,6 +70,7 @@ pub enum Expression<'a> {
     BinaryExpression(Box<'a, BinaryExpression<'a>>),
     SequenceExpression(Box<'a, SequenceExpression<'a>>),
     ParenthesizedExpression(Box<'a, ParenthesizedExpression<'a>>),
+    ArrayExpression(Box<'a, ArrayExpression<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -133,4 +134,21 @@ pub struct ParenthesizedExpression<'a> {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub span: Span,
     pub expression: Expression<'a>,
+}
+
+/// Array Expression
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct ArrayExpression<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub elements: Vec<'a, ArrayExpressionElement<'a>>,
+    pub trailing_comma: Option<Span>,
+}
+
+/// Array Expression Element
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(untagged))]
+pub enum ArrayExpressionElement<'a> {
+    Expression(Expression<'a>),
 }

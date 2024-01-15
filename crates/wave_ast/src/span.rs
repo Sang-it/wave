@@ -14,6 +14,7 @@ impl<'a> GetSpan for Expression<'a> {
             Self::BinaryExpression(e) => e.span,
             Self::SequenceExpression(e) => e.span,
             Self::ParenthesizedExpression(e) => e.span,
+            Self::ArrayExpression(e) => e.span,
         }
     }
 }
