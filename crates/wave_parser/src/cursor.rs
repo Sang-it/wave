@@ -57,6 +57,11 @@ impl<'a> Parser<'a> {
         self.lexer.lookahead(1)
     }
 
+    /// Peek at kind
+    pub(crate) fn peek_at(&mut self, kind: Kind) -> bool {
+        self.peek_token().kind == kind
+    }
+
     /// Get current token
     pub(crate) fn cur_token(&self) -> Token {
         self.token

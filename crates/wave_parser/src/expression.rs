@@ -12,7 +12,7 @@ use wave_syntax::precedence::Precedence;
 use crate::{
     diagnostics,
     grammar::CoverGrammar,
-    list::{SeparatedList, SequenceExpressionList},
+    list::{ArrayExpressionList, SeparatedList, SequenceExpressionList},
     operator::{kind_to_precedence, map_assignment_operator, map_binary_operator},
     Parser,
 };
@@ -137,10 +137,19 @@ impl<'a> Parser<'a> {
 
         match &self.cur_kind() {
             Kind::Ident => self.parse_identifier_expression(), // fast path, keywords are checked at the end
+            Kind::LBrack => self.parse_array_expression(),
             Kind::LParen => self.parse_parenthesized_expression(span),
             kind if kind.is_literal() => self.parse_literal_expression(),
             _ => self.parse_identifier_expression(),
         }
+    }
+
+    pub(crate) fn parse_array_expression(&mut self) -> Result<Expression<'a>> {
+        let span = self.start_span();
+        let list = ArrayExpressionList::parse(self)?;
+        Ok(self
+            .ast
+            .array_expression(self.end_span(span), list.elements, list.trailing_comma))
     }
 
     fn parse_parenthesized_expression(&mut self, span: Span) -> Result<Expression<'a>> {
