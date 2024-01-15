@@ -2,8 +2,9 @@ use crate::ast::{
     AssignmentExpression, AssignmentTarget, BinaryExpression, BindingIdentifier, BindingPattern,
     BindingPatternKind, BlockStatement, Declaration, Expression, ExpressionStatement,
     FormalParameter, FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
-    IdentifierReference, IfStatement, Program, ReturnStatement, Statement, VariableDeclaration,
-    VariableDeclarationKind, VariableDeclarator,
+    IdentifierReference, IfStatement, ParenthesizedExpression, Program, ReturnStatement,
+    SequenceExpression, Statement, VariableDeclaration, VariableDeclarationKind,
+    VariableDeclarator,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -206,5 +207,23 @@ impl<'a> AstBuilder<'a> {
 
     pub fn return_statement(&self, span: Span, argument: Option<Expression<'a>>) -> Statement<'a> {
         Statement::ReturnStatement(self.alloc(ReturnStatement { span, argument }))
+    }
+
+    pub fn sequence_expression(
+        &self,
+        span: Span,
+        expressions: Vec<'a, Expression<'a>>,
+    ) -> Expression<'a> {
+        Expression::SequenceExpression(self.alloc(SequenceExpression { span, expressions }))
+    }
+
+    pub fn parenthesized_expression(
+        &self,
+        span: Span,
+        expression: Expression<'a>,
+    ) -> Expression<'a> {
+        Expression::ParenthesizedExpression(
+            self.alloc(ParenthesizedExpression { span, expression }),
+        )
     }
 }

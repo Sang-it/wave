@@ -68,6 +68,8 @@ pub enum Expression<'a> {
     StringLiteral(Box<'a, StringLiteral>),
     Identifier(Box<'a, IdentifierReference>),
     BinaryExpression(Box<'a, BinaryExpression<'a>>),
+    SequenceExpression(Box<'a, SequenceExpression<'a>>),
+    ParenthesizedExpression(Box<'a, ParenthesizedExpression<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -106,6 +108,15 @@ pub struct BlockStatement<'a> {
     pub body: Vec<'a, Statement<'a>>,
 }
 
+/// Sequence Expression
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct SequenceExpression<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub expressions: Vec<'a, Expression<'a>>,
+}
+
 /// Return Statement
 #[derive(Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
@@ -113,4 +124,13 @@ pub struct ReturnStatement<'a> {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub span: Span,
     pub argument: Option<Expression<'a>>,
+}
+
+/// Parenthesized Expression
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct ParenthesizedExpression<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub expression: Expression<'a>,
 }
