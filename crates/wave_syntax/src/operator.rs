@@ -93,6 +93,8 @@ pub enum UnaryOperator {
     UnaryNegation,
     #[cfg_attr(feature = "serde", serde(rename = "+"))]
     UnaryPlus,
+    #[cfg_attr(feature = "serde", serde(rename = "!"))]
+    LogicalNot,
 }
 
 impl UnaryOperator {
@@ -104,6 +106,7 @@ impl UnaryOperator {
         match self {
             Self::UnaryNegation => "-",
             Self::UnaryPlus => "+",
+            Self::LogicalNot => "!",
         }
     }
 }
