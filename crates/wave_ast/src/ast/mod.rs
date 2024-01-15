@@ -48,6 +48,7 @@ pub enum Statement<'a> {
     ExpressionStatement(Box<'a, ExpressionStatement<'a>>),
     IfStatement(Box<'a, IfStatement<'a>>),
     BlockStatement(Box<'a, BlockStatement<'a>>),
+    ReturnStatement(Box<'a, ReturnStatement<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -103,4 +104,13 @@ pub struct BlockStatement<'a> {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub span: Span,
     pub body: Vec<'a, Statement<'a>>,
+}
+
+/// Return Statement
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct ReturnStatement<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub argument: Option<Expression<'a>>,
 }

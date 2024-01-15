@@ -2,7 +2,7 @@ use crate::ast::{
     AssignmentExpression, AssignmentTarget, BinaryExpression, BindingIdentifier, BindingPattern,
     BindingPatternKind, BlockStatement, Declaration, Expression, ExpressionStatement,
     FormalParameter, FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
-    IdentifierReference, IfStatement, Program, Statement, VariableDeclaration,
+    IdentifierReference, IfStatement, Program, ReturnStatement, Statement, VariableDeclaration,
     VariableDeclarationKind, VariableDeclarator,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
@@ -202,5 +202,9 @@ impl<'a> AstBuilder<'a> {
         statements: Vec<'a, Statement<'a>>,
     ) -> Box<'a, FunctionBody<'a>> {
         self.alloc(FunctionBody { span, statements })
+    }
+
+    pub fn return_statement(&self, span: Span, argument: Option<Expression<'a>>) -> Statement<'a> {
+        Statement::ReturnStatement(self.alloc(ReturnStatement { span, argument }))
     }
 }
