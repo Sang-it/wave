@@ -6,6 +6,7 @@ use crate::ast::{
     IdentifierReference, IfStatement, LogicalExpression, ParenthesizedExpression, Program,
     ReturnStatement, SequenceExpression, SimpleAssignmentTarget, Statement, UnaryExpression,
     UpdateExpression, VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
+    WhileStatement,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -297,5 +298,14 @@ impl<'a> AstBuilder<'a> {
             operator,
             right,
         }))
+    }
+
+    pub fn while_statement(
+        &self,
+        span: Span,
+        test: Expression<'a>,
+        body: Statement<'a>,
+    ) -> Statement<'a> {
+        Statement::WhileStatement(self.alloc(WhileStatement { span, test, body }))
     }
 }
