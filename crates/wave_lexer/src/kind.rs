@@ -62,6 +62,7 @@ pub enum Kind {
     Plus2,
     Minus2,
     Bang,
+    While,
 }
 
 use self::Kind::*;
@@ -139,6 +140,7 @@ impl Kind {
             Plus2 => "++",
             Minus2 => "--",
             Bang => "!",
+            While => "while",
         }
     }
 
