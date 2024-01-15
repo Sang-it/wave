@@ -13,7 +13,7 @@ pub static BYTE_HANDLERS: [ByteHandler; 128] = [
     SPS, IDT, QOT, IDT, IDT, PRC, AMP, QOT, PNO, PNC, ATR, PLS, COM, MIN, IDT, SLH, // 2
     ZER, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, IDT, SEM, LSS, EQL, GTR, IDT, // 3
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 4
-    IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, CRT, IDT, // 5
+    IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, BTO, IDT, BTC, CRT, IDT, // 5
     IDT, IDT, IDT, L_C, IDT, L_E, L_F, IDT, IDT, L_I, IDT, IDT, L_L, IDT, IDT, IDT, // 6
     IDT, IDT, L_R, IDT, L_T, IDT, IDT, IDT, IDT, IDT, IDT, BEO, PIP, BEC, IDT, ERR, // 7
 ];
@@ -208,9 +208,22 @@ const CRT: ByteHandler = |lexer| {
     }
 };
 
+// ,
 const COM: ByteHandler = |lexer| {
     lexer.consume_char();
     Kind::Comma
+};
+
+// [
+const BTO: ByteHandler = |lexer| {
+    lexer.consume_char();
+    Kind::LBrack
+};
+
+// ]
+const BTC: ByteHandler = |lexer| {
+    lexer.consume_char();
+    Kind::RBrack
 };
 
 // (

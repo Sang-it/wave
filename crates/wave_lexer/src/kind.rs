@@ -57,6 +57,8 @@ pub enum Kind {
     Star2Eq,
     Caret,
     CaretEq,
+    LBrack,
+    RBrack,
 }
 
 use self::Kind::*;
@@ -129,6 +131,8 @@ impl Kind {
             CaretEq => "^=",
             AmpEq => "&=",
             PipeEq => "|=",
+            LBrack => "[",
+            RBrack => "]",
         }
     }
 
