@@ -1,5 +1,6 @@
 mod assignment_expression;
 mod binding;
+mod call_expression;
 mod function_declaration;
 mod identifier;
 mod variable_declaration;
@@ -12,6 +13,7 @@ pub use crate::ast::variable_declaration::{
 };
 pub use assignment_expression::{AssignmentExpression, AssignmentTarget, SimpleAssignmentTarget};
 pub use binding::{BindingIdentifier, BindingPattern, BindingPatternKind};
+pub use call_expression::CallExpression;
 pub use identifier::IdentifierReference;
 
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
@@ -71,6 +73,7 @@ pub enum Expression<'a> {
     SequenceExpression(Box<'a, SequenceExpression<'a>>),
     ParenthesizedExpression(Box<'a, ParenthesizedExpression<'a>>),
     ArrayExpression(Box<'a, ArrayExpression<'a>>),
+    CallExpression(Box<'a, CallExpression<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -150,5 +153,12 @@ pub struct ArrayExpression<'a> {
 #[derive(Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize), serde(untagged))]
 pub enum ArrayExpressionElement<'a> {
+    Expression(Expression<'a>),
+}
+
+/// Argument
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(untagged))]
+pub enum Argument<'a> {
     Expression(Expression<'a>),
 }

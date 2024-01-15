@@ -1,10 +1,11 @@
 use crate::ast::{
-    ArrayExpression, ArrayExpressionElement, AssignmentExpression, AssignmentTarget,
+    Argument, ArrayExpression, ArrayExpressionElement, AssignmentExpression, AssignmentTarget,
     BinaryExpression, BindingIdentifier, BindingPattern, BindingPatternKind, BlockStatement,
-    Declaration, Expression, ExpressionStatement, FormalParameter, FormalParameterKind,
-    FormalParameters, Function, FunctionBody, FunctionType, IdentifierReference, IfStatement,
-    ParenthesizedExpression, Program, ReturnStatement, SequenceExpression, Statement,
-    VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
+    CallExpression, Declaration, Expression, ExpressionStatement, FormalParameter,
+    FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
+    IdentifierReference, IfStatement, ParenthesizedExpression, Program, ReturnStatement,
+    SequenceExpression, Statement, VariableDeclaration, VariableDeclarationKind,
+    VariableDeclarator,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -237,6 +238,19 @@ impl<'a> AstBuilder<'a> {
             span,
             elements,
             trailing_comma,
+        }))
+    }
+
+    pub fn call_expression(
+        &self,
+        span: Span,
+        callee: Expression<'a>,
+        arguments: Vec<'a, Argument<'a>>,
+    ) -> Expression<'a> {
+        Expression::CallExpression(self.alloc(CallExpression {
+            span,
+            callee,
+            arguments,
         }))
     }
 }
