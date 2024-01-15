@@ -117,6 +117,8 @@ const PLS: ByteHandler = |lexer| {
     lexer.consume_char();
     if lexer.next_eq('=') {
         Kind::PlusEq
+    } else if lexer.next_eq('+') {
+        Kind::Plus2
     } else {
         Kind::Plus
     }
@@ -127,6 +129,8 @@ const MIN: ByteHandler = |lexer| {
     lexer.consume_char();
     if lexer.next_eq('=') {
         Kind::MinusEq
+    } else if lexer.next_eq('-') {
+        Kind::Minus2
     } else {
         Kind::Minus
     }

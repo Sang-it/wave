@@ -59,6 +59,8 @@ pub enum Kind {
     CaretEq,
     LBrack,
     RBrack,
+    Plus2,
+    Minus2,
 }
 
 use self::Kind::*;
@@ -133,6 +135,8 @@ impl Kind {
             PipeEq => "|=",
             LBrack => "[",
             RBrack => "]",
+            Plus2 => "++",
+            Minus2 => "--",
         }
     }
 
@@ -147,6 +151,19 @@ impl Kind {
     pub fn is_identifier_name(self) -> bool {
         matches!(self, Ident)
     }
+
+    pub fn is_unary_operator(self) -> bool {
+        matches!(self, Minus | Plus)
+    }
+
+    pub fn is_update_operator(self) -> bool {
+        matches!(self, Plus2 | Minus2)
+    }
+
+    pub fn is_logical_operator(self) -> bool {
+        matches!(self, Pipe2 | Amp2)
+    }
+
 
     #[rustfmt::skip]
     pub fn is_binary_operator(self) -> bool {
