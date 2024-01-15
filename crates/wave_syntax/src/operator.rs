@@ -6,12 +6,45 @@ use serde::Serialize;
 pub enum AssignmentOperator {
     #[cfg_attr(feature = "serde", serde(rename = "="))]
     Assign,
+    #[cfg_attr(feature = "serde", serde(rename = "+="))]
+    Addition,
+    #[cfg_attr(feature = "serde", serde(rename = "-="))]
+    Subtraction,
+    #[cfg_attr(feature = "serde", serde(rename = "*="))]
+    Multiplication,
+    #[cfg_attr(feature = "serde", serde(rename = "/="))]
+    Division,
+    #[cfg_attr(feature = "serde", serde(rename = "%="))]
+    Remainder,
+    #[cfg_attr(feature = "serde", serde(rename = "&&="))]
+    LogicalAnd,
+    #[cfg_attr(feature = "serde", serde(rename = "||="))]
+    LogicalOr,
+    #[cfg_attr(feature = "serde", serde(rename = "**="))]
+    Exponential,
+    #[cfg_attr(feature = "serde", serde(rename = "|="))]
+    BitwiseOR,
+    #[cfg_attr(feature = "serde", serde(rename = "^="))]
+    BitwiseXOR,
+    #[cfg_attr(feature = "serde", serde(rename = "&="))]
+    BitwiseAnd,
 }
 
 impl AssignmentOperator {
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Assign => "=",
+            Self::Addition => "+=",
+            Self::Subtraction => "-=",
+            Self::Multiplication => "*=",
+            Self::Division => "/=",
+            Self::Remainder => "%=",
+            Self::LogicalAnd => "&&=",
+            Self::LogicalOr => "||=",
+            Self::Exponential => "**=",
+            Self::BitwiseOR => "|=",
+            Self::BitwiseXOR => "^=",
+            Self::BitwiseAnd => "&=",
         }
     }
 }
@@ -31,10 +64,6 @@ pub enum BinaryOperator {
     GreaterThan,
     #[cfg_attr(feature = "serde", serde(rename = ">="))]
     GreaterEqualThan,
-    #[cfg_attr(feature = "serde", serde(rename = "<<"))]
-    ShiftLeft,
-    #[cfg_attr(feature = "serde", serde(rename = ">>"))]
-    ShiftRight,
     #[cfg_attr(feature = "serde", serde(rename = "+"))]
     Addition,
     #[cfg_attr(feature = "serde", serde(rename = "-"))]
@@ -45,12 +74,12 @@ pub enum BinaryOperator {
     Division,
     #[cfg_attr(feature = "serde", serde(rename = "%"))]
     Remainder,
+    #[cfg_attr(feature = "serde", serde(rename = "**"))]
+    Exponential,
     #[cfg_attr(feature = "serde", serde(rename = "|"))]
     BitwiseOR,
     #[cfg_attr(feature = "serde", serde(rename = "^"))]
     BitwiseXOR,
     #[cfg_attr(feature = "serde", serde(rename = "&"))]
     BitwiseAnd,
-    #[cfg_attr(feature = "serde", serde(rename = "**"))]
-    Exponential,
 }
