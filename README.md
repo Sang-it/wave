@@ -2,7 +2,7 @@
 An over-engineered multi paradigm language that comes with its whole ecosystem.
 
 <!-- ROADMAP -->
-## Roadmap (will be updated as we go)
+## Roadmap => Parser (will be updated as we go)
 - [x] Implement arena allocator.
 - [x] Implement compact-str and optimized span.
 - [x] Implement diagnostics system.
@@ -10,7 +10,9 @@ An over-engineered multi paradigm language that comes with its whole ecosystem.
 - [x] Implement const statement parser
 - [x] Implement binary operations
 - [x] Implement control statments
-- [ ] Implement function declarations
+- [x] Implement function declarations
+- [x] Implement return statements
+- [ ] Implement array declarations
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
