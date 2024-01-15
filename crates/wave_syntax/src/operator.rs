@@ -1,6 +1,8 @@
 #[cfg(feature = "serde")]
 use serde::Serialize;
 
+use crate::precedence::{GetPrecedence, Precedence};
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum AssignmentOperator {
@@ -82,4 +84,75 @@ pub enum BinaryOperator {
     BitwiseXOR,
     #[cfg_attr(feature = "serde", serde(rename = "&"))]
     BitwiseAnd,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum UnaryOperator {
+    #[cfg_attr(feature = "serde", serde(rename = "-"))]
+    UnaryNegation,
+    #[cfg_attr(feature = "serde", serde(rename = "+"))]
+    UnaryPlus,
+}
+
+impl UnaryOperator {
+    pub fn is_arithmetic(self) -> bool {
+        matches!(self, Self::UnaryNegation | Self::UnaryPlus)
+    }
+
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::UnaryNegation => "-",
+            Self::UnaryPlus => "+",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum UpdateOperator {
+    #[cfg_attr(feature = "serde", serde(rename = "++"))]
+    Increment,
+    #[cfg_attr(feature = "serde", serde(rename = "--"))]
+    Decrement,
+}
+
+impl UpdateOperator {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Increment => "++",
+            Self::Decrement => "--",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+pub enum LogicalOperator {
+    #[cfg_attr(feature = "serde", serde(rename = "||"))]
+    Or,
+    #[cfg_attr(feature = "serde", serde(rename = "&&"))]
+    And,
+    #[cfg_attr(feature = "serde", serde(rename = "??"))]
+    Coalesce,
+}
+
+impl LogicalOperator {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Or => "||",
+            Self::And => "&&",
+            Self::Coalesce => "??",
+        }
+    }
+}
+
+impl GetPrecedence for LogicalOperator {
+    fn precedence(&self) -> Precedence {
+        match self {
+            Self::Or => Precedence::LogicalOr,
+            Self::And => Precedence::LogicalAnd,
+            Self::Coalesce => Precedence::Coalesce,
+        }
+    }
 }
