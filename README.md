@@ -1,5 +1,11 @@
 # Wave
-An over-engineered multi paradigm language that comes with its whole ecosystem.
+An over-engineered multi paradigm (toy) language that comes with its whole ecosystem.
+
+Planned components:
+- Linter
+- Formatter
+- Minifier
+- LSP (maybe)
 
 <!-- ROADMAP -->
 ## Roadmap => Parser (will be updated as we go)
