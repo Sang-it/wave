@@ -44,6 +44,7 @@ impl<'a> Parser<'a> {
         match self.cur_kind() {
             Kind::LCurly => self.parse_block_statement(),
             Kind::If => self.parse_if_statement(),
+            Kind::While => self.parse_while_statement(),
             Kind::Const => self.parse_variable_statement(stmt_ctx),
             Kind::Let => self.parse_variable_statement(stmt_ctx),
             Kind::Return => self.parse_return_statement(),
@@ -138,5 +139,12 @@ impl<'a> Parser<'a> {
             )));
         }
         Ok(self.ast.return_statement(self.end_span(span), argument))
+    }
+    fn parse_while_statement(&mut self) -> Result<Statement<'a>> {
+        let span = self.start_span();
+        self.bump_any(); // bump `while`
+        let test = self.parse_paren_expression()?;
+        let body = self.parse_statement_list_item(StatementContext::While)?;
+        Ok(self.ast.while_statement(self.end_span(span), test, body))
     }
 }

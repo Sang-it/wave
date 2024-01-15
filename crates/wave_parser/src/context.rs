@@ -16,37 +16,15 @@ impl Default for Context {
 
 impl Context {
     #[inline]
-    pub(crate) fn has_in(self) -> bool {
-        self.contains(Self::In)
-    }
-
-    #[inline]
     pub(crate) fn has_return(self) -> bool {
         self.contains(Self::Return)
-    }
-
-    pub(crate) fn and_return(self, include: bool) -> Self {
-        self.and(Self::Return, include)
-    }
-
-    #[inline]
-    fn and(self, flag: Self, set: bool) -> Self {
-        if set {
-            self | flag
-        } else {
-            self - flag
-        }
     }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum StatementContext {
     If,
-    Label,
-    Do,
     While,
-    With,
-    For,
     StatementList,
 }
 

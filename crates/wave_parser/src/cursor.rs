@@ -3,6 +3,7 @@ use wave_diagnostics::Result;
 use wave_lexer::{Kind, LexerCheckpoint, Token};
 use wave_span::Span;
 
+#[allow(dead_code)]
 pub struct ParserCheckpoint<'a> {
     lexer: LexerCheckpoint<'a>,
     cur_token: Token,
@@ -45,11 +46,6 @@ impl<'a> Parser<'a> {
     /// Get current string
     pub(crate) fn cur_string(&self) -> &'a str {
         self.lexer.get_string(self.token)
-    }
-
-    /// Peek next kind, returns EOF for final peek
-    pub(crate) fn peek_kind(&mut self) -> Kind {
-        self.peek_token().kind
     }
 
     /// Peek next token, returns EOF for final peek

@@ -5,9 +5,7 @@ use crate::Parser;
 
 impl<'a> Parser<'a> {
     pub(crate) fn parse_binding(&mut self) -> Result<(BindingPattern<'a>, bool)> {
-        let kind = match self.cur_kind() {
-            _ => self.parse_binding_pattern_identifier(),
-        }?;
+        let kind = self.parse_binding_pattern_identifier()?;
         Ok((self.ast.binding_pattern(kind), false))
     }
 
@@ -17,7 +15,7 @@ impl<'a> Parser<'a> {
     }
 
     pub(crate) fn parse_binding_pattern(&mut self) -> Result<BindingPattern<'a>> {
-        let span = self.start_span();
+        let _span = self.start_span();
         let pattern = self.parse_binding()?.0;
         Ok(pattern)
     }

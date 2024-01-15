@@ -9,7 +9,6 @@ use wave_span::Span;
 #[derive(Clone, Debug, Copy, Eq, PartialEq)]
 pub enum VariableDeclarationParent {
     Statement,
-    Clause,
 }
 #[derive(Clone, Debug, Copy, Eq, PartialEq)]
 pub struct VariableDeclarationContext {
@@ -40,10 +39,7 @@ impl<'a> Parser<'a> {
         let declaration = self.parse_variable_declarator(decl_ctx, kind)?;
         declarations.push(declaration);
 
-        if matches!(
-            decl_ctx.parent,
-            VariableDeclarationParent::Statement | VariableDeclarationParent::Clause
-        ) {
+        if matches!(decl_ctx.parent, VariableDeclarationParent::Statement) {
             self.asi()?;
         }
 
