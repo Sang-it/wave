@@ -12,7 +12,7 @@ use wave_syntax::precedence::Precedence;
 use crate::{
     diagnostics,
     grammar::CoverGrammar,
-    list::{ArrayExpressionList, SeparatedList, SequenceExpressionList},
+    list::{ArrayExpressionList, CallArguments, SeparatedList, SequenceExpressionList},
     operator::{kind_to_precedence, map_assignment_operator, map_binary_operator},
     Parser,
 };
@@ -126,10 +126,38 @@ impl<'a> Parser<'a> {
     }
 
     pub(crate) fn parse_lhs_expression(&mut self) -> Result<Expression<'a>> {
-        let _span = self.start_span();
-        let mut _in_optional_chain = false;
+        let span = self.start_span();
         let lhs = self.parse_primary_expression()?;
+        let lhs = self.parse_call_expression(span, lhs)?;
         Ok(lhs)
+    }
+
+    fn parse_call_expression(
+        &mut self,
+        lhs_span: Span,
+        lhs: Expression<'a>,
+    ) -> Result<Expression<'a>> {
+        let mut lhs = lhs;
+        loop {
+            if self.at(Kind::LParen) {
+                lhs = self.parse_call_arguments(lhs_span, lhs)?;
+                continue;
+            }
+            break;
+        }
+
+        Ok(lhs)
+    }
+
+    fn parse_call_arguments(
+        &mut self,
+        lhs_span: Span,
+        lhs: Expression<'a>,
+    ) -> Result<Expression<'a>> {
+        let call_arguments = CallArguments::parse(self)?;
+        Ok(self
+            .ast
+            .call_expression(self.end_span(lhs_span), lhs, call_arguments.elements))
     }
 
     fn parse_primary_expression(&mut self) -> Result<Expression<'a>> {

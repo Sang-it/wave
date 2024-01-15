@@ -1,5 +1,5 @@
 use wave_allocator::Vec;
-use wave_ast::ast::{ArrayExpressionElement, Expression, FormalParameter};
+use wave_ast::ast::{Argument, ArrayExpressionElement, Expression, FormalParameter};
 use wave_diagnostics::Result;
 use wave_lexer::Kind;
 use wave_span::Span;
@@ -140,6 +140,36 @@ impl<'a> SeparatedList<'a> for ArrayExpressionList<'a> {
             self.trailing_comma = Some(p.end_span(p.start_span()));
         }
 
+        self.elements.push(element?);
+        Ok(())
+    }
+}
+
+pub struct CallArguments<'a> {
+    pub elements: Vec<'a, Argument<'a>>,
+    pub rest_element_with_trilling_comma: Option<Span>,
+}
+
+impl<'a> SeparatedList<'a> for CallArguments<'a> {
+    fn new(p: &Parser<'a>) -> Self {
+        Self {
+            elements: p.ast.new_vec(),
+            rest_element_with_trilling_comma: None,
+        }
+    }
+
+    fn open(&self) -> Kind {
+        Kind::LParen
+    }
+
+    fn close(&self) -> Kind {
+        Kind::RParen
+    }
+
+    fn parse_element(&mut self, p: &mut Parser<'a>) -> Result<()> {
+        let element = p
+            .parse_assignment_expression_base()
+            .map(Argument::Expression);
         self.elements.push(element?);
         Ok(())
     }
