@@ -34,9 +34,6 @@ pub(crate) enum LinkStyle {
     Link,
     Text,
 }
-fn style() -> Style {
-    Style::new()
-}
 
 impl GraphicalReportHandler {
     /// Create a new `GraphicalReportHandler` with the default
