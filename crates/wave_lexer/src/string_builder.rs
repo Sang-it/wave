@@ -13,28 +13,10 @@ impl<'a> AutoCow<'a> {
         AutoCow { start, value: None }
     }
 
-    // Push a char that matches lexer.chars().next()
     pub fn push_matching(&mut self, c: char) {
         if let Some(text) = &mut self.value {
             text.push(c);
         }
-    }
-
-    // Push a different character than lexer.chars().next().
-    // force_allocation_without_current_ascii_char must be called before this.
-    pub fn push_different(&mut self, c: char) {
-        debug_assert!(self.value.is_some());
-        self.value.as_mut().unwrap().push(c);
-    }
-
-    // Force allocation of a String, excluding the current ASCII character,
-    // and return the reference to it
-    pub fn get_mut_string_without_current_ascii_char<'b>(
-        &'b mut self,
-        lexer: &Lexer<'a>,
-    ) -> &'b mut String<'a> {
-        self.force_allocation_without_current_ascii_char(lexer);
-        self.value.as_mut().unwrap()
     }
 
     // Force allocation of a String, excluding the current ASCII character.
