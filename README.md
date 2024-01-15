@@ -21,7 +21,10 @@ Planned components:
 - [x] Implement array declarations
 - [x] Implement function call expressions
 - [x] Implement unary, unary update and logical expressions
+- [x] Implement while loops
+- [x] Implement break and continue
 - [ ] Implement member expressions
+- [ ] Implement class related expressions
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
