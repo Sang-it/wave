@@ -1,6 +1,8 @@
 use wave_lexer::Kind;
 use wave_syntax::{
-    operator::{AssignmentOperator, BinaryOperator},
+    operator::{
+        AssignmentOperator, BinaryOperator, LogicalOperator, UnaryOperator, UpdateOperator,
+    },
     precedence::Precedence,
 };
 
@@ -56,5 +58,29 @@ pub fn map_binary_operator(kind: Kind) -> BinaryOperator {
         Kind::Caret => BinaryOperator::BitwiseXOR,
         Kind::Amp => BinaryOperator::BitwiseAnd,
         _ => unreachable!("Binary Operator: {kind:?}"),
+    }
+}
+
+pub fn map_unary_operator(kind: Kind) -> UnaryOperator {
+    match kind {
+        Kind::Minus => UnaryOperator::UnaryNegation,
+        Kind::Plus => UnaryOperator::UnaryPlus,
+        _ => unreachable!("Unary Operator: {kind:?}"),
+    }
+}
+
+pub fn map_logical_operator(kind: Kind) -> LogicalOperator {
+    match kind {
+        Kind::Pipe2 => LogicalOperator::Or,
+        Kind::Amp2 => LogicalOperator::And,
+        _ => unreachable!("Logical Operator: {kind:?}"),
+    }
+}
+
+pub fn map_update_operator(kind: Kind) -> UpdateOperator {
+    match kind {
+        Kind::Plus2 => UpdateOperator::Increment,
+        Kind::Minus2 => UpdateOperator::Decrement,
+        _ => unreachable!("Update Operator: {kind:?}"),
     }
 }

@@ -1,7 +1,10 @@
 use std::cell::Cell;
 
 use wave_ast::{
-    ast::{AssignmentTarget, BindingIdentifier, Expression, IdentifierReference},
+    ast::{
+        AssignmentTarget, BindingIdentifier, Expression, IdentifierReference,
+        SimpleAssignmentTarget,
+    },
     literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral},
 };
 use wave_diagnostics::Result;
@@ -13,7 +16,10 @@ use crate::{
     diagnostics,
     grammar::CoverGrammar,
     list::{ArrayExpressionList, CallArguments, SeparatedList, SequenceExpressionList},
-    operator::{kind_to_precedence, map_assignment_operator, map_binary_operator},
+    operator::{
+        kind_to_precedence, map_assignment_operator, map_binary_operator, map_logical_operator,
+        map_unary_operator, map_update_operator,
+    },
     Parser,
 };
 
@@ -97,7 +103,14 @@ impl<'a> Parser<'a> {
             self.bump_any(); // bump operator
             let rhs = self.parse_binary_or_logical_expression_base(left_precedence)?;
 
-            lhs = if kind.is_binary_operator() {
+            lhs = if kind.is_logical_operator() {
+                self.ast.logical_expression(
+                    self.end_span(lhs_span),
+                    lhs,
+                    map_logical_operator(kind),
+                    rhs,
+                )
+            } else if kind.is_binary_operator() {
                 self.ast.binary_expression(
                     self.end_span(lhs_span),
                     lhs,
@@ -112,16 +125,51 @@ impl<'a> Parser<'a> {
         Ok(lhs)
     }
 
-    pub(crate) fn parse_unary_expression_base(
-        &mut self,
-        _lhs_span: Span,
-    ) -> Result<Expression<'a>> {
+    pub(crate) fn parse_unary_expression_base(&mut self, lhs_span: Span) -> Result<Expression<'a>> {
+        // ++ -- prefix update expressions
+        if self.cur_kind().is_update_operator() {
+            let operator = map_update_operator(self.cur_kind());
+            self.bump_any();
+            let argument = self.parse_unary_expression_base(lhs_span)?;
+            let argument = SimpleAssignmentTarget::cover(argument, self)?;
+            return Ok(self.ast.update_expression(
+                self.end_span(lhs_span),
+                operator,
+                true,
+                argument,
+            ));
+        }
+
+        if self.cur_kind().is_unary_operator() {
+            return self.parse_unary_expression();
+        }
+
         self.parse_update_expression()
     }
 
+    fn parse_unary_expression(&mut self) -> Result<Expression<'a>> {
+        let span = self.start_span();
+        let operator = map_unary_operator(self.cur_kind());
+        self.bump_any();
+        let argument = self.parse_unary_expression_base(span)?;
+        Ok(self
+            .ast
+            .unary_expression(self.end_span(span), operator, argument))
+    }
+
     fn parse_update_expression(&mut self) -> Result<Expression<'a>> {
-        let _span = self.start_span();
+        let span = self.start_span();
         let lhs = self.parse_lhs_expression()?;
+
+        if self.cur_kind().is_update_operator() && !self.cur_token().is_on_new_line {
+            let operator = map_update_operator(self.cur_kind());
+            self.bump_any();
+            let lhs = SimpleAssignmentTarget::cover(lhs, self)?;
+            return Ok(self
+                .ast
+                .update_expression(self.end_span(span), operator, false, lhs));
+        }
+
         Ok(lhs)
     }
 
