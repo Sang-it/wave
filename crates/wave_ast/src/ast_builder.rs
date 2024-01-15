@@ -3,14 +3,16 @@ use crate::ast::{
     BinaryExpression, BindingIdentifier, BindingPattern, BindingPatternKind, BlockStatement,
     CallExpression, Declaration, Expression, ExpressionStatement, FormalParameter,
     FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
-    IdentifierReference, IfStatement, ParenthesizedExpression, Program, ReturnStatement,
-    SequenceExpression, Statement, VariableDeclaration, VariableDeclarationKind,
-    VariableDeclarator,
+    IdentifierReference, IfStatement, LogicalExpression, ParenthesizedExpression, Program,
+    ReturnStatement, SequenceExpression, SimpleAssignmentTarget, Statement, UnaryExpression,
+    UpdateExpression, VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
 use wave_span::Span;
-use wave_syntax::operator::{AssignmentOperator, BinaryOperator};
+use wave_syntax::operator::{
+    AssignmentOperator, BinaryOperator, LogicalOperator, UnaryOperator, UpdateOperator,
+};
 
 pub struct AstBuilder<'a> {
     pub allocator: &'a Allocator,
@@ -251,6 +253,49 @@ impl<'a> AstBuilder<'a> {
             span,
             callee,
             arguments,
+        }))
+    }
+
+    pub fn unary_expression(
+        &self,
+        span: Span,
+        operator: UnaryOperator,
+        argument: Expression<'a>,
+    ) -> Expression<'a> {
+        Expression::UnaryExpression(self.alloc(UnaryExpression {
+            span,
+            operator,
+            argument,
+        }))
+    }
+
+    pub fn update_expression(
+        &self,
+        span: Span,
+        operator: UpdateOperator,
+        prefix: bool,
+        argument: SimpleAssignmentTarget<'a>,
+    ) -> Expression<'a> {
+        Expression::UpdateExpression(self.alloc(UpdateExpression {
+            span,
+            operator,
+            prefix,
+            argument,
+        }))
+    }
+
+    pub fn logical_expression(
+        &self,
+        span: Span,
+        left: Expression<'a>,
+        operator: LogicalOperator,
+        right: Expression<'a>,
+    ) -> Expression<'a> {
+        Expression::LogicalExpression(self.alloc(LogicalExpression {
+            span,
+            left,
+            operator,
+            right,
         }))
     }
 }

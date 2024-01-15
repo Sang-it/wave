@@ -20,7 +20,7 @@ use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use std::hash::Hash;
 use wave_allocator::{Box, Vec};
 use wave_span::Span;
-use wave_syntax::operator::BinaryOperator;
+use wave_syntax::operator::{BinaryOperator, LogicalOperator, UnaryOperator, UpdateOperator};
 
 #[cfg(feature = "serde")]
 use serde::Serialize;
@@ -74,6 +74,9 @@ pub enum Expression<'a> {
     ParenthesizedExpression(Box<'a, ParenthesizedExpression<'a>>),
     ArrayExpression(Box<'a, ArrayExpression<'a>>),
     CallExpression(Box<'a, CallExpression<'a>>),
+    UnaryExpression(Box<'a, UnaryExpression<'a>>),
+    UpdateExpression(Box<'a, UpdateExpression<'a>>),
+    LogicalExpression(Box<'a, LogicalExpression<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -161,4 +164,36 @@ pub enum ArrayExpressionElement<'a> {
 #[cfg_attr(feature = "serde", derive(Serialize), serde(untagged))]
 pub enum Argument<'a> {
     Expression(Expression<'a>),
+}
+
+/// Unary Expression
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct UnaryExpression<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub operator: UnaryOperator,
+    pub argument: Expression<'a>,
+}
+
+/// Update Expression
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct UpdateExpression<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub operator: UpdateOperator,
+    pub prefix: bool,
+    pub argument: SimpleAssignmentTarget<'a>,
+}
+
+/// Binary Logical Operators
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct LogicalExpression<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub left: Expression<'a>,
+    pub operator: LogicalOperator,
+    pub right: Expression<'a>,
 }

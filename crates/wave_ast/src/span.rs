@@ -16,6 +16,9 @@ impl<'a> GetSpan for Expression<'a> {
             Self::ParenthesizedExpression(e) => e.span,
             Self::ArrayExpression(e) => e.span,
             Self::CallExpression(e) => e.span,
+            Self::UnaryExpression(e) => e.span,
+            Self::UpdateExpression(e) => e.span,
+            Self::LogicalExpression(e) => e.span,
         }
     }
 }
