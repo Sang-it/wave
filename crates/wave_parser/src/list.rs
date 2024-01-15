@@ -1,5 +1,5 @@
 use wave_allocator::Vec;
-use wave_ast::ast::FormalParameter;
+use wave_ast::ast::{Expression, FormalParameter};
 use wave_diagnostics::Result;
 use wave_lexer::Kind;
 
@@ -81,6 +81,34 @@ impl<'a> SeparatedList<'a> for FormalParameterList<'a> {
             }
         }
 
+        Ok(())
+    }
+}
+
+pub struct SequenceExpressionList<'a> {
+    pub elements: Vec<'a, Expression<'a>>,
+}
+
+impl<'a> SeparatedList<'a> for SequenceExpressionList<'a> {
+    fn new(p: &Parser<'a>) -> Self {
+        Self {
+            elements: p.ast.new_vec(),
+        }
+    }
+
+    fn open(&self) -> Kind {
+        Kind::LParen
+    }
+
+    fn close(&self) -> Kind {
+        Kind::RParen
+    }
+
+    // read everything as expression and map to it to either
+    // ParenthesizedExpression or ArrowFormalParameters later
+    fn parse_element(&mut self, p: &mut Parser<'a>) -> Result<()> {
+        let element = p.parse_assignment_expression_base()?;
+        self.elements.push(element);
         Ok(())
     }
 }

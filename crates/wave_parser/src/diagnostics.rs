@@ -47,3 +47,8 @@ pub struct ExpectFunctionName(#[label] pub Span);
 #[error("TS1108: A 'return' statement can only be used within a function body")]
 #[diagnostic()]
 pub struct ReturnStatementOnlyInFunctionBody(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Empty parenthesized expression")]
+#[diagnostic()]
+pub struct EmptyParenthesizedExpression(#[label] pub Span);

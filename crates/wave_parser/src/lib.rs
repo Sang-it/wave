@@ -10,13 +10,9 @@ mod list;
 mod operator;
 mod statement;
 
-use context::{Context, StatementContext};
+use context::Context;
 use wave_allocator::Allocator;
-use wave_ast::{
-    ast::{Expression, Program, Statement},
-    ast_builder::AstBuilder,
-    Trivias,
-};
+use wave_ast::{ast::Program, ast_builder::AstBuilder, Trivias};
 use wave_diagnostics::{Error, Result};
 use wave_lexer::{Kind, Lexer, Token};
 use wave_span::Span;
@@ -36,6 +32,7 @@ pub struct Parser<'a> {
     ctx: Context,
     prev_token_end: u32,
     ast: AstBuilder<'a>,
+    preserve_parens: bool,
 }
 
 impl<'a> Parser<'a> {
@@ -48,6 +45,7 @@ impl<'a> Parser<'a> {
             prev_token_end: 0,
             ctx: Context::default(),
             ast: AstBuilder::new(allocator),
+            preserve_parens: true,
         }
     }
 

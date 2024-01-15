@@ -12,6 +12,7 @@ use wave_syntax::precedence::Precedence;
 use crate::{
     diagnostics,
     grammar::CoverGrammar,
+    list::{SeparatedList, SequenceExpressionList},
     operator::{kind_to_precedence, map_assignment_operator, map_binary_operator},
     Parser,
 };
@@ -111,7 +112,10 @@ impl<'a> Parser<'a> {
         Ok(lhs)
     }
 
-    pub(crate) fn parse_unary_expression_base(&mut self, lhs_span: Span) -> Result<Expression<'a>> {
+    pub(crate) fn parse_unary_expression_base(
+        &mut self,
+        _lhs_span: Span,
+    ) -> Result<Expression<'a>> {
         self.parse_update_expression()
     }
 
@@ -129,13 +133,40 @@ impl<'a> Parser<'a> {
     }
 
     fn parse_primary_expression(&mut self) -> Result<Expression<'a>> {
-        let _span = self.start_span();
+        let span = self.start_span();
 
         match &self.cur_kind() {
             Kind::Ident => self.parse_identifier_expression(), // fast path, keywords are checked at the end
+            Kind::LParen => self.parse_parenthesized_expression(span),
             kind if kind.is_literal() => self.parse_literal_expression(),
             _ => self.parse_identifier_expression(),
         }
+    }
+
+    fn parse_parenthesized_expression(&mut self, span: Span) -> Result<Expression<'a>> {
+        let list = SequenceExpressionList::parse(self)?;
+
+        let mut expressions = list.elements;
+        let paren_span = self.end_span(span);
+
+        if expressions.is_empty() {
+            return Err(diagnostics::EmptyParenthesizedExpression(paren_span).into());
+        }
+
+        let expression = if expressions.len() == 1 {
+            expressions.remove(0)
+        } else {
+            self.ast.sequence_expression(
+                Span::new(paren_span.start + 1, paren_span.end - 1),
+                expressions,
+            )
+        };
+
+        Ok(if self.preserve_parens {
+            self.ast.parenthesized_expression(paren_span, expression)
+        } else {
+            expression
+        })
     }
 
     pub(crate) fn parse_literal_expression(&mut self) -> Result<Expression<'a>> {
