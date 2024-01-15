@@ -63,6 +63,8 @@ pub enum Kind {
     Minus2,
     Bang,
     While,
+    Break,
+    Continue,
 }
 
 use self::Kind::*;
@@ -141,6 +143,8 @@ impl Kind {
             Minus2 => "--",
             Bang => "!",
             While => "while",
+            Break => "break",
+            Continue => "continue",
         }
     }
 

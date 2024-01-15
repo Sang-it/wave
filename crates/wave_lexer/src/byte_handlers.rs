@@ -14,7 +14,7 @@ pub static BYTE_HANDLERS: [ByteHandler; 128] = [
     ZER, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, IDT, SEM, LSS, EQL, GTR, IDT, // 3
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 4
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, BTO, IDT, BTC, CRT, IDT, // 5
-    IDT, IDT, IDT, L_C, IDT, L_E, L_F, IDT, IDT, L_I, IDT, IDT, L_L, IDT, IDT, IDT, // 6
+    IDT, IDT, L_B, L_C, IDT, L_E, L_F, IDT, IDT, L_I, IDT, IDT, L_L, IDT, IDT, IDT, // 6
     IDT, IDT, L_R, IDT, L_T, IDT, IDT, L_W, IDT, IDT, IDT, BEO, PIP, BEC, IDT, ERR, // 7
 ];
 
@@ -264,8 +264,14 @@ const EXL: ByteHandler = |lexer| {
     }
 };
 
+const L_B: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "reak" => Kind::Break,
+    _ => Kind::Ident,
+};
+
 const L_C: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     "onst" => Kind::Const,
+    "ontinue" => Kind::Continue,
     _ => Kind::Ident,
 };
 
