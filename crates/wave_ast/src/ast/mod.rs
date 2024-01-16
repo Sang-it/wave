@@ -83,6 +83,7 @@ pub enum Expression<'a> {
     UpdateExpression(Box<'a, UpdateExpression<'a>>),
     LogicalExpression(Box<'a, LogicalExpression<'a>>),
     MemberExpression(Box<'a, MemberExpression<'a>>),
+    ThisExpression(Box<'a, ThisExpression>),
 }
 
 #[derive(Debug, Hash)]
@@ -243,4 +244,12 @@ impl IdentifierName {
     pub fn new(span: Span, name: Atom) -> Self {
         Self { span, name }
     }
+}
+
+/// This Expression
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct ThisExpression {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
 }
