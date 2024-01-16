@@ -271,13 +271,31 @@ impl<'a> Parser<'a> {
             Kind::LBrack => self.parse_array_expression(),
             Kind::LParen => self.parse_parenthesized_expression(span),
             // Kind::Class => self.parse_class_expression(),
-            // Kind::New => self.parse_new_expression(),
+            Kind::New => self.parse_new_expression(),
             Kind::This => Ok(self.parse_this_expression()),
             Kind::Super => Ok(self.parse_super()),
 
             kind if kind.is_literal() => self.parse_literal_expression(),
             _ => self.parse_identifier_expression(),
         }
+    }
+
+    fn parse_new_expression(&mut self) -> Result<Expression<'a>> {
+        let span = self.start_span();
+        let _ = self.parse_keyword_identifier(Kind::New);
+        let callee = self.parse_member_expression_base()?;
+        let arguments = if self.at(Kind::LParen) {
+            CallArguments::parse(self)?.elements
+        } else {
+            self.ast.new_vec()
+        };
+        let span = self.end_span(span);
+        Ok(self.ast.new_expression(span, callee, arguments))
+    }
+
+    pub(crate) fn parse_keyword_identifier(&mut self, kind: Kind) -> IdentifierName {
+        let (span, name) = self.parse_identifier_kind(kind);
+        IdentifierName { span, name }
     }
 
     fn parse_super(&mut self) -> Expression<'a> {
