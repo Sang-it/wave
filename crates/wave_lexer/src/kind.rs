@@ -184,6 +184,13 @@ impl Kind {
         matches!(self, Pipe2 | Amp2)
     }
 
+    pub fn is_class_element_name_start(self) -> bool {
+        self.is_literal_property_name() || matches!(self, LBrack)
+    }
+
+    pub fn is_literal_property_name(self) -> bool {
+        self.is_identifier_name() || self == Str || self.is_number()
+    }
 
     #[rustfmt::skip]
     pub fn is_binary_operator(self) -> bool {
