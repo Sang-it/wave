@@ -2,7 +2,7 @@ use std::cell::Cell;
 
 use wave_ast::{
     ast::{
-        AssignmentTarget, BindingIdentifier, Expression, IdentifierReference,
+        AssignmentTarget, BindingIdentifier, Expression, IdentifierName, IdentifierReference,
         SimpleAssignmentTarget,
     },
     literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral},
@@ -175,9 +175,64 @@ impl<'a> Parser<'a> {
 
     pub(crate) fn parse_lhs_expression(&mut self) -> Result<Expression<'a>> {
         let span = self.start_span();
-        let lhs = self.parse_primary_expression()?;
+        let lhs = self.parse_member_expression_base()?;
         let lhs = self.parse_call_expression(span, lhs)?;
         Ok(lhs)
+    }
+
+    fn parse_member_expression_base(&mut self) -> Result<Expression<'a>> {
+        let span = self.start_span();
+        self.parse_primary_expression()
+            .and_then(|lhs| self.parse_member_expression_rhs(span, lhs))
+    }
+
+    fn parse_member_expression_rhs(
+        &mut self,
+        lhs_span: Span,
+        lhs: Expression<'a>,
+    ) -> Result<Expression<'a>> {
+        let mut lhs = lhs;
+        loop {
+            lhs = match self.cur_kind() {
+                Kind::Dot => self.parse_static_member_expression(lhs_span, lhs)?,
+                Kind::LBrack => self.parse_computed_member_expression(lhs_span, lhs)?,
+                _ => break,
+            };
+        }
+        Ok(lhs)
+    }
+
+    fn parse_computed_member_expression(
+        &mut self,
+        lhs_span: Span,
+        lhs: Expression<'a>,
+    ) -> Result<Expression<'a>> {
+        self.bump_any(); // advance `[`
+        let property = self.parse_expression()?;
+        self.expect(Kind::RBrack)?;
+        Ok(self
+            .ast
+            .computed_member_expression(self.end_span(lhs_span), lhs, property))
+    }
+
+    fn parse_static_member_expression(
+        &mut self,
+        lhs_span: Span,
+        lhs: Expression<'a>,
+    ) -> Result<Expression<'a>> {
+        self.bump_any(); // advance `.` or `?.`
+        let ident = self.parse_identifier_name()?;
+        Ok(self
+            .ast
+            .static_member_expression(self.end_span(lhs_span), lhs, ident))
+    }
+
+    pub(crate) fn parse_identifier_name(&mut self) -> Result<IdentifierName> {
+        if !self.cur_kind().is_identifier_name() {
+            return Err(self.unexpected());
+        }
+        let (span, name) = self.parse_identifier_kind(Kind::Ident);
+        Ok(IdentifierName { span, name })
     }
 
     fn parse_call_expression(
