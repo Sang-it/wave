@@ -8,7 +8,7 @@ Planned components:
 - LSP (maybe)
 
 <!-- ROADMAP -->
-## Roadmap => Parser (will be updated as we go)
+## Roadmap => Parser (Completed)
 - [x] Implement arena allocator.
 - [x] Implement compact-str and optimized span.
 - [x] Implement diagnostics system.
@@ -23,8 +23,12 @@ Planned components:
 - [x] Implement unary, unary update and logical expressions
 - [x] Implement while loops
 - [x] Implement break and continue
-- [ ] Implement member expressions
-- [ ] Implement class related expressions
+- [x] Implement member expressions
+- [x] Implement class related expressions
+
+## Roadmap => Evaluator (will be updated as we go)
+- [ ] Implement binary operations
+
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
