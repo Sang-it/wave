@@ -1,5 +1,11 @@
 # Wave
 An over-engineered multi paradigm (toy) language that comes with its whole ecosystem.
+The language will have many implementations; I just want to learn how everything works.
+
+Planned Language Implementations:
+- Interpreter
+- ByteCode-Interpreter(VM)
+- LLVM
 
 Planned components:
 - Linter
@@ -26,7 +32,7 @@ Planned components:
 - [x] Implement member expressions
 - [x] Implement class related expressions
 
-## Roadmap => Evaluator (will be updated as we go)
+## Roadmap => Interpreter (will be updated as we go)
 - [ ] Implement binary operations
 
 
