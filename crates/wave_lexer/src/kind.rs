@@ -66,6 +66,11 @@ pub enum Kind {
     Break,
     Continue,
     Dot,
+    Class,
+    This,
+    Extends,
+    Super,
+    New,
 }
 
 use self::Kind::*;
@@ -147,6 +152,11 @@ impl Kind {
             Break => "break",
             Continue => "continue",
             Dot => ".",
+            Class => "class",
+            This => "this",
+            Extends => "extends",
+            Super => "super",
+            New => "new",
         }
     }
 

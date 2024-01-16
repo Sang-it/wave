@@ -14,8 +14,8 @@ pub static BYTE_HANDLERS: [ByteHandler; 128] = [
     ZER, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, DIG, IDT, SEM, LSS, EQL, GTR, IDT, // 3
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, // 4
     IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, IDT, BTO, IDT, BTC, CRT, IDT, // 5
-    IDT, IDT, L_B, L_C, IDT, L_E, L_F, IDT, IDT, L_I, IDT, IDT, L_L, IDT, IDT, IDT, // 6
-    IDT, IDT, L_R, IDT, L_T, IDT, IDT, L_W, IDT, IDT, IDT, BEO, PIP, BEC, IDT, ERR, // 7
+    IDT, IDT, L_B, L_C, IDT, L_E, L_F, IDT, IDT, L_I, IDT, IDT, L_L, IDT, L_N, IDT, // 6
+    IDT, IDT, L_R, L_S, L_T, IDT, IDT, L_W, IDT, IDT, IDT, BEO, PIP, BEC, IDT, ERR, // 7
 ];
 
 const ERR: ByteHandler = |lexer| {
@@ -277,12 +277,14 @@ const L_B: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
 
 const L_C: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     "onst" => Kind::Const,
+    "lass" => Kind::Class,
     "ontinue" => Kind::Continue,
     _ => Kind::Ident,
 };
 
 const L_E: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     "lse" => Kind::Else,
+    "xtends" => Kind::Extends,
     _ => Kind::Ident,
 };
 
@@ -302,13 +304,25 @@ const L_L: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     _ => Kind::Ident,
 };
 
+const L_N: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "ull" => Kind::Null,
+    "ew" => Kind::New,
+    _ => Kind::Ident,
+};
+
 const L_T: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "his" => Kind::This,
     "rue" => Kind::True,
     _ => Kind::Ident,
 };
 
 const L_R: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     "eturn" => Kind::Return,
+    _ => Kind::Ident,
+};
+
+const L_S: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
+    "uper" => Kind::Super,
     _ => Kind::Ident,
 };
 
