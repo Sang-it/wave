@@ -9,6 +9,7 @@ use serde::Serialize;
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum FunctionType {
     FunctionDeclaration,
+    FunctionExpression,
 }
 
 #[derive(Debug, Hash)]

@@ -1,6 +1,7 @@
 mod assignment_expression;
 mod binding;
 mod call_expression;
+mod class;
 mod function_declaration;
 mod identifier;
 mod member_expression;
@@ -15,6 +16,10 @@ pub use crate::ast::variable_declaration::{
 pub use assignment_expression::{AssignmentExpression, AssignmentTarget, SimpleAssignmentTarget};
 pub use binding::{BindingIdentifier, BindingPattern, BindingPatternKind};
 pub use call_expression::CallExpression;
+pub use class::{
+    Class, ClassBody, ClassElement, ClassType, MethodDefinition, MethodDefinitionKind,
+    PropertyDefinition, PropertyKey,
+};
 pub use identifier::IdentifierReference;
 pub use member_expression::{ComputedMemberExpression, MemberExpression, StaticMemberExpression};
 
@@ -63,6 +68,7 @@ pub enum Statement<'a> {
 pub enum Declaration<'a> {
     VariableDeclaration(Box<'a, VariableDeclaration<'a>>),
     FunctionDeclaration(Box<'a, Function<'a>>),
+    ClassDeclaration(Box<'a, Class<'a>>),
 }
 
 #[derive(Debug, Hash)]

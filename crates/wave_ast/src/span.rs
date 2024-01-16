@@ -47,6 +47,7 @@ impl<'a> GetSpan for Declaration<'a> {
         match self {
             Self::VariableDeclaration(decl) => decl.span,
             Self::FunctionDeclaration(decl) => decl.span,
+            Self::ClassDeclaration(decl) => decl.span,
         }
     }
 }

@@ -1,10 +1,11 @@
 use crate::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, AssignmentExpression, AssignmentTarget,
     BinaryExpression, BindingIdentifier, BindingPattern, BindingPatternKind, BlockStatement,
-    BreakStatement, CallExpression, ComputedMemberExpression, ContinueStatement, Declaration,
-    Expression, ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters,
-    Function, FunctionBody, FunctionType, IdentifierName, IdentifierReference, IfStatement,
-    LogicalExpression, MemberExpression, NewExpression, ParenthesizedExpression, Program,
+    BreakStatement, CallExpression, Class, ClassBody, ClassElement, ClassType,
+    ComputedMemberExpression, ContinueStatement, Declaration, Expression, ExpressionStatement,
+    FormalParameter, FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
+    IdentifierName, IdentifierReference, IfStatement, LogicalExpression, MemberExpression,
+    NewExpression, ParenthesizedExpression, Program, PropertyDefinition, PropertyKey,
     ReturnStatement, SequenceExpression, SimpleAssignmentTarget, Statement, StaticMemberExpression,
     Super, ThisExpression, UnaryExpression, UpdateExpression, VariableDeclaration,
     VariableDeclarationKind, VariableDeclarator, WhileStatement,
@@ -385,5 +386,43 @@ impl<'a> AstBuilder<'a> {
             callee,
             arguments,
         }))
+    }
+
+    pub fn class_declaration(&self, class: Box<'a, Class<'a>>) -> Statement<'a> {
+        Statement::Declaration(Declaration::ClassDeclaration(class))
+    }
+
+    pub fn class(
+        &self,
+        r#type: ClassType,
+        span: Span,
+        id: Option<BindingIdentifier>,
+        super_class: Option<Expression<'a>>,
+        body: Box<'a, ClassBody<'a>>,
+    ) -> Box<'a, Class<'a>> {
+        self.alloc(Class {
+            r#type,
+            span,
+            id,
+            super_class,
+            body,
+        })
+    }
+
+    pub fn class_body(
+        &self,
+        span: Span,
+        body: Vec<'a, ClassElement<'a>>,
+    ) -> Box<'a, ClassBody<'a>> {
+        self.alloc(ClassBody { span, body })
+    }
+
+    pub fn class_property(
+        &self,
+        span: Span,
+        key: PropertyKey<'a>,
+        value: Option<Expression<'a>>,
+    ) -> ClassElement<'a> {
+        ClassElement::PropertyDefinition(self.alloc(PropertyDefinition { span, key, value }))
     }
 }
