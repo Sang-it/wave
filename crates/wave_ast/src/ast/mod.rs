@@ -3,6 +3,7 @@ mod binding;
 mod call_expression;
 mod function_declaration;
 mod identifier;
+mod member_expression;
 mod variable_declaration;
 
 pub use crate::ast::function_declaration::{
@@ -15,11 +16,12 @@ pub use assignment_expression::{AssignmentExpression, AssignmentTarget, SimpleAs
 pub use binding::{BindingIdentifier, BindingPattern, BindingPatternKind};
 pub use call_expression::CallExpression;
 pub use identifier::IdentifierReference;
+pub use member_expression::{ComputedMemberExpression, MemberExpression, StaticMemberExpression};
 
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use std::hash::Hash;
 use wave_allocator::{Box, Vec};
-use wave_span::Span;
+use wave_span::{Atom, Span};
 use wave_syntax::operator::{BinaryOperator, LogicalOperator, UnaryOperator, UpdateOperator};
 
 #[cfg(feature = "serde")]
@@ -80,6 +82,7 @@ pub enum Expression<'a> {
     UnaryExpression(Box<'a, UnaryExpression<'a>>),
     UpdateExpression(Box<'a, UpdateExpression<'a>>),
     LogicalExpression(Box<'a, LogicalExpression<'a>>),
+    MemberExpression(Box<'a, MemberExpression<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -225,4 +228,19 @@ pub struct ContinueStatement {
 pub struct BreakStatement {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub span: Span,
+}
+
+/// Identifier Name
+#[derive(Debug, Clone, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct IdentifierName {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub name: Atom,
+}
+
+impl IdentifierName {
+    pub fn new(span: Span, name: Atom) -> Self {
+        Self { span, name }
+    }
 }

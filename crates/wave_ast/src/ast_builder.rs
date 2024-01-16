@@ -1,12 +1,13 @@
 use crate::ast::{
     Argument, ArrayExpression, ArrayExpressionElement, AssignmentExpression, AssignmentTarget,
     BinaryExpression, BindingIdentifier, BindingPattern, BindingPatternKind, BlockStatement,
-    BreakStatement, CallExpression, ContinueStatement, Declaration, Expression,
-    ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters, Function,
-    FunctionBody, FunctionType, IdentifierReference, IfStatement, LogicalExpression,
-    ParenthesizedExpression, Program, ReturnStatement, SequenceExpression, SimpleAssignmentTarget,
-    Statement, UnaryExpression, UpdateExpression, VariableDeclaration, VariableDeclarationKind,
-    VariableDeclarator, WhileStatement,
+    BreakStatement, CallExpression, ComputedMemberExpression, ContinueStatement, Declaration,
+    Expression, ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters,
+    Function, FunctionBody, FunctionType, IdentifierName, IdentifierReference, IfStatement,
+    LogicalExpression, MemberExpression, ParenthesizedExpression, Program, ReturnStatement,
+    SequenceExpression, SimpleAssignmentTarget, Statement, StaticMemberExpression, UnaryExpression,
+    UpdateExpression, VariableDeclaration, VariableDeclarationKind, VariableDeclarator,
+    WhileStatement,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -315,5 +316,54 @@ impl<'a> AstBuilder<'a> {
 
     pub fn continue_statement(&self, span: Span) -> Statement<'a> {
         Statement::ContinueStatement(self.alloc(ContinueStatement { span }))
+    }
+
+    pub fn static_member_expression(
+        &self,
+        span: Span,
+        object: Expression<'a>,
+        property: IdentifierName,
+    ) -> Expression<'a> {
+        self.member_expression(self.static_member(span, object, property))
+    }
+
+    pub fn computed_member_expression(
+        &self,
+        span: Span,
+        object: Expression<'a>,
+        expression: Expression<'a>,
+    ) -> Expression<'a> {
+        self.member_expression(self.computed_member(span, object, expression))
+    }
+
+    pub fn member_expression(&self, expr: MemberExpression<'a>) -> Expression<'a> {
+        Expression::MemberExpression(self.alloc(expr))
+    }
+
+    pub fn static_member(
+        &self,
+        span: Span,
+        object: Expression<'a>,
+        property: IdentifierName,
+    ) -> MemberExpression<'a> {
+        let static_member_expression = StaticMemberExpression {
+            span,
+            object,
+            property,
+        };
+        MemberExpression::StaticMemberExpression(static_member_expression)
+    }
+
+    pub fn computed_member(
+        &self,
+        span: Span,
+        object: Expression<'a>,
+        expression: Expression<'a>,
+    ) -> MemberExpression<'a> {
+        MemberExpression::ComputedMemberExpression(ComputedMemberExpression {
+            span,
+            object,
+            expression,
+        })
     }
 }
