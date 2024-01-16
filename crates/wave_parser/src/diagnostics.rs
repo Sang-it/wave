@@ -20,6 +20,11 @@ pub struct InvalidNumber(pub &'static str, #[label] pub Span);
 pub struct UnexpectedToken(#[label] pub Span);
 
 #[derive(Debug, Error, Diagnostic)]
+#[error("'super' can only be used with function calls or in property accesses")]
+#[diagnostic(help("replace with `super()` or `super.prop` or `super[prop]`"))]
+pub struct UnexpectedSuper(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
 #[error("Cannot assign to this expression")]
 #[diagnostic()]
 pub struct InvalidAssignment(#[label] pub Span);

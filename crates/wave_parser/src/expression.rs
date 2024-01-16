@@ -270,14 +270,25 @@ impl<'a> Parser<'a> {
             Kind::Ident => self.parse_identifier_expression(), // fast path, keywords are checked at the end
             Kind::LBrack => self.parse_array_expression(),
             Kind::LParen => self.parse_parenthesized_expression(span),
-            // Kind::New => self.parse_new_expression(),
             // Kind::Class => self.parse_class_expression(),
-            // Kind::Super => Ok(self.parse_super()),
+            // Kind::New => self.parse_new_expression(),
             Kind::This => Ok(self.parse_this_expression()),
+            Kind::Super => Ok(self.parse_super()),
 
             kind if kind.is_literal() => self.parse_literal_expression(),
             _ => self.parse_identifier_expression(),
         }
+    }
+
+    fn parse_super(&mut self) -> Expression<'a> {
+        let span = self.start_span();
+        self.bump_any();
+        let span = self.end_span(span);
+        if !matches!(self.cur_kind(), Kind::Dot | Kind::LBrack | Kind::LParen) {
+            self.error(diagnostics::UnexpectedSuper(span));
+        }
+
+        self.ast.super_(span)
     }
 
     pub(crate) fn parse_array_expression(&mut self) -> Result<Expression<'a>> {
