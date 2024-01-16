@@ -5,9 +5,9 @@ use crate::ast::{
     Expression, ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters,
     Function, FunctionBody, FunctionType, IdentifierName, IdentifierReference, IfStatement,
     LogicalExpression, MemberExpression, ParenthesizedExpression, Program, ReturnStatement,
-    SequenceExpression, SimpleAssignmentTarget, Statement, StaticMemberExpression, ThisExpression,
-    UnaryExpression, UpdateExpression, VariableDeclaration, VariableDeclarationKind,
-    VariableDeclarator, WhileStatement,
+    SequenceExpression, SimpleAssignmentTarget, Statement, StaticMemberExpression, Super,
+    ThisExpression, UnaryExpression, UpdateExpression, VariableDeclaration,
+    VariableDeclarationKind, VariableDeclarator, WhileStatement,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -368,5 +368,9 @@ impl<'a> AstBuilder<'a> {
     }
     pub fn this_expression(&self, span: Span) -> Expression<'a> {
         Expression::ThisExpression(self.alloc(ThisExpression { span }))
+    }
+
+    pub fn super_(&self, span: Span) -> Expression<'a> {
+        Expression::Super(self.alloc(Super { span }))
     }
 }

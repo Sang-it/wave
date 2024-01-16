@@ -84,6 +84,7 @@ pub enum Expression<'a> {
     LogicalExpression(Box<'a, LogicalExpression<'a>>),
     MemberExpression(Box<'a, MemberExpression<'a>>),
     ThisExpression(Box<'a, ThisExpression>),
+    Super(Box<'a, Super>),
 }
 
 #[derive(Debug, Hash)]
@@ -250,6 +251,13 @@ impl IdentifierName {
 #[derive(Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
 pub struct ThisExpression {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+}
+
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct Super {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub span: Span,
 }
