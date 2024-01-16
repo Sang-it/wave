@@ -11,6 +11,16 @@ use wave_span::Span;
 pub struct LexicalDeclarationSingleStatement(#[label] pub Span);
 
 #[derive(Debug, Error, Diagnostic)]
+#[error("TS2681: A constructor cannot have a `this` parameter.")]
+#[diagnostic()]
+pub struct TSConstructorThisParameter(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Invalid class declaration")]
+#[diagnostic(help("Classes can only be declared at top level or inside a block"))]
+pub struct ClassDeclaration(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
 #[error("Invalid Number {0}")]
 pub struct InvalidNumber(pub &'static str, #[label] pub Span);
 
@@ -57,3 +67,8 @@ pub struct ReturnStatementOnlyInFunctionBody(#[label] pub Span);
 #[error("Empty parenthesized expression")]
 #[diagnostic()]
 pub struct EmptyParenthesizedExpression(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Classes can't have a field named 'constructor'")]
+#[diagnostic()]
+pub struct FieldConstructor(#[label] pub Span);

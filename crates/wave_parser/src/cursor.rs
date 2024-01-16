@@ -68,6 +68,11 @@ impl<'a> Parser<'a> {
         self.token.kind
     }
 
+    /// Peek next kind, returns EOF for final peek
+    pub(crate) fn peek_kind(&mut self) -> Kind {
+        self.peek_token().kind
+    }
+
     pub(crate) fn at(&self, kind: Kind) -> bool {
         self.cur_kind() == kind
     }

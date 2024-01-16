@@ -1,10 +1,30 @@
 use wave_allocator::Vec;
-use wave_ast::ast::{Argument, ArrayExpressionElement, Expression, FormalParameter};
+use wave_ast::ast::{Argument, ArrayExpressionElement, ClassElement, Expression, FormalParameter};
 use wave_diagnostics::Result;
 use wave_lexer::Kind;
 use wave_span::Span;
 
 use crate::Parser;
+
+pub trait NormalList<'a> {
+    /// Open element, e.g.. `{` `[` `(`
+    fn open(&self) -> Kind;
+
+    /// Close element, e.g.. `}` `]` `)`
+    fn close(&self) -> Kind;
+
+    fn parse_element(&mut self, p: &mut Parser<'a>) -> Result<()>;
+
+    /// Main entry point, parse the list
+    fn parse(&mut self, p: &mut Parser<'a>) -> Result<()> {
+        p.expect(self.open())?;
+        while !p.at(self.close()) && !p.at(Kind::Eof) {
+            self.parse_element(p)?;
+        }
+        p.expect(self.close())?;
+        Ok(())
+    }
+}
 
 pub trait SeparatedList<'a>: Sized {
     fn new(p: &Parser<'a>) -> Self;
@@ -171,6 +191,44 @@ impl<'a> SeparatedList<'a> for CallArguments<'a> {
             .parse_assignment_expression_base()
             .map(Argument::Expression);
         self.elements.push(element?);
+        Ok(())
+    }
+}
+
+pub struct ClassElements<'a> {
+    pub elements: Vec<'a, ClassElement<'a>>,
+}
+
+impl<'a> ClassElements<'a> {
+    pub(crate) fn new(p: &Parser<'a>) -> Self {
+        Self {
+            elements: p.ast.new_vec(),
+        }
+    }
+}
+
+impl<'a> NormalList<'a> for ClassElements<'a> {
+    fn open(&self) -> Kind {
+        Kind::LCurly
+    }
+
+    fn close(&self) -> Kind {
+        Kind::RCurly
+    }
+
+    fn parse_element(&mut self, p: &mut Parser<'a>) -> Result<()> {
+        // skip empty class element `;`
+        while p.at(Kind::Semicolon) {
+            p.bump_any();
+        }
+
+        if p.at(self.close()) {
+            return Ok(());
+        }
+
+        let element = p.parse_class_element()?;
+
+        self.elements.push(element);
         Ok(())
     }
 }

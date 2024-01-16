@@ -1,4 +1,5 @@
 mod binding;
+mod class;
 mod context;
 mod cursor;
 mod declaration;
@@ -7,8 +8,11 @@ mod expression;
 mod function;
 mod grammar;
 mod list;
+mod object;
 mod operator;
 mod statement;
+
+mod syntax_directed_operations;
 
 use context::Context;
 use wave_allocator::Allocator;

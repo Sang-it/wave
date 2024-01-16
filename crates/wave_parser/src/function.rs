@@ -19,6 +19,7 @@ use crate::{
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub enum FunctionKind {
     Declaration { single_statement: bool },
+    Expression,
 }
 
 impl FunctionKind {
@@ -53,6 +54,7 @@ impl<'a> Parser<'a> {
 
         let function_type = match func_kind {
             FunctionKind::Declaration { .. } => FunctionType::FunctionDeclaration,
+            FunctionKind::Expression { .. } => FunctionType::FunctionExpression,
         };
 
         Ok(self
@@ -118,5 +120,10 @@ impl<'a> Parser<'a> {
         }
 
         id
+    }
+
+    pub(crate) fn parse_method(&mut self) -> Result<Box<'a, Function<'a>>> {
+        let span = self.start_span();
+        self.parse_function(span, None, FunctionKind::Expression)
     }
 }

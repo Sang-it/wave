@@ -41,6 +41,8 @@ impl<'a> Parser<'a> {
         &mut self,
         stmt_ctx: StatementContext,
     ) -> Result<Statement<'a>> {
+        let start_span = self.start_span();
+
         match self.cur_kind() {
             Kind::LCurly => self.parse_block_statement(),
             Kind::If => self.parse_if_statement(),
@@ -49,6 +51,7 @@ impl<'a> Parser<'a> {
             Kind::Const => self.parse_variable_statement(stmt_ctx),
             Kind::Let => self.parse_variable_statement(stmt_ctx),
             Kind::Return => self.parse_return_statement(),
+            Kind::Class => self.parse_class_statement(stmt_ctx, start_span),
             _ if self.at_function() => self.parse_function_declaration(stmt_ctx),
             _ => self.parse_expression_or_labeled_statement(),
         }

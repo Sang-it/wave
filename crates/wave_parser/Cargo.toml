@@ -17,7 +17,8 @@ wave_allocator   = { workspace = true }
 wave_span        = { workspace = true }
 wave_syntax      = { workspace = true }
 
-bitflags = { workspace = true }
+bitflags   = { workspace = true }
+rustc-hash = { workspace = true }
 
 [dev-dependencies]
 wave_ast   = { workspace = true, features = ["serde"] }
