@@ -36,6 +36,7 @@ impl<'a> GetSpan for Expression<'a> {
             Self::LogicalExpression(e) => e.span,
             Self::ThisExpression(e) => e.span,
             Self::Super(e) => e.span,
+            Self::NewExpression(e) => e.span,
             Self::MemberExpression(e) => e.span(),
         }
     }

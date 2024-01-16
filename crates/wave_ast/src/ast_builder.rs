@@ -4,9 +4,9 @@ use crate::ast::{
     BreakStatement, CallExpression, ComputedMemberExpression, ContinueStatement, Declaration,
     Expression, ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters,
     Function, FunctionBody, FunctionType, IdentifierName, IdentifierReference, IfStatement,
-    LogicalExpression, MemberExpression, ParenthesizedExpression, Program, ReturnStatement,
-    SequenceExpression, SimpleAssignmentTarget, Statement, StaticMemberExpression, Super,
-    ThisExpression, UnaryExpression, UpdateExpression, VariableDeclaration,
+    LogicalExpression, MemberExpression, NewExpression, ParenthesizedExpression, Program,
+    ReturnStatement, SequenceExpression, SimpleAssignmentTarget, Statement, StaticMemberExpression,
+    Super, ThisExpression, UnaryExpression, UpdateExpression, VariableDeclaration,
     VariableDeclarationKind, VariableDeclarator, WhileStatement,
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
@@ -372,5 +372,18 @@ impl<'a> AstBuilder<'a> {
 
     pub fn super_(&self, span: Span) -> Expression<'a> {
         Expression::Super(self.alloc(Super { span }))
+    }
+
+    pub fn new_expression(
+        &self,
+        span: Span,
+        callee: Expression<'a>,
+        arguments: Vec<'a, Argument<'a>>,
+    ) -> Expression<'a> {
+        Expression::NewExpression(self.alloc(NewExpression {
+            span,
+            callee,
+            arguments,
+        }))
     }
 }

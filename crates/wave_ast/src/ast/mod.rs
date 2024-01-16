@@ -85,6 +85,7 @@ pub enum Expression<'a> {
     MemberExpression(Box<'a, MemberExpression<'a>>),
     ThisExpression(Box<'a, ThisExpression>),
     Super(Box<'a, Super>),
+    NewExpression(Box<'a, NewExpression<'a>>),
 }
 
 #[derive(Debug, Hash)]
@@ -260,4 +261,13 @@ pub struct ThisExpression {
 pub struct Super {
     #[cfg_attr(feature = "serde", serde(flatten))]
     pub span: Span,
+}
+
+#[derive(Debug, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
+pub struct NewExpression<'a> {
+    #[cfg_attr(feature = "serde", serde(flatten))]
+    pub span: Span,
+    pub callee: Expression<'a>,
+    pub arguments: Vec<'a, Argument<'a>>,
 }
