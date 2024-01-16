@@ -65,6 +65,7 @@ pub enum Kind {
     While,
     Break,
     Continue,
+    Dot,
 }
 
 use self::Kind::*;
@@ -145,6 +146,7 @@ impl Kind {
             While => "while",
             Break => "break",
             Continue => "continue",
+            Dot => ".",
         }
     }
 
