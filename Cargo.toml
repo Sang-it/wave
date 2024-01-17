@@ -9,6 +9,7 @@ members  = [
     "crates/wave_syntax",
     "crates/wave_index",
     "crates/wave_parser",
+    "crates/wave_interpreter",
     "crates/wave"
     ]
 

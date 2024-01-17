@@ -527,6 +527,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "wave_interpreter"
+version = "0.1.0"
+dependencies = [
+ "rustc-hash",
+ "wave_allocator",
+ "wave_ast",
+ "wave_diagnostics",
+ "wave_parser",
+ "wave_span",
+ "wave_syntax",
+]
+
+[[package]]
 name = "wave_lexer"
 version = "0.1.0"
 dependencies = [

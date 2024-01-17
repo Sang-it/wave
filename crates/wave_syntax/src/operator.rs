@@ -86,6 +86,28 @@ pub enum BinaryOperator {
     BitwiseAnd,
 }
 
+impl BinaryOperator {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::Equality => "==",
+            Self::Inequality => "!=",
+            Self::LessThan => "<",
+            Self::LessEqualThan => "<=",
+            Self::GreaterThan => ">",
+            Self::GreaterEqualThan => ">=",
+            Self::Addition => "+",
+            Self::Subtraction => "-",
+            Self::Multiplication => "*",
+            Self::Division => "/",
+            Self::Remainder => "%",
+            Self::Exponential => "**",
+            Self::BitwiseOR => "|",
+            Self::BitwiseXOR => "^",
+            Self::BitwiseAnd => "&",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum UnaryOperator {

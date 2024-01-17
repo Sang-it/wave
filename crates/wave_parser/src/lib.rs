@@ -49,7 +49,7 @@ impl<'a> Parser<'a> {
             prev_token_end: 0,
             ctx: Context::default(),
             ast: AstBuilder::new(allocator),
-            preserve_parens: true,
+            preserve_parens: false,
         }
     }
 
