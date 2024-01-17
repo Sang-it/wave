@@ -158,8 +158,8 @@ pub enum LogicalOperator {
     Or,
     #[cfg_attr(feature = "serde", serde(rename = "&&"))]
     And,
-    #[cfg_attr(feature = "serde", serde(rename = "??"))]
-    Coalesce,
+    // #[cfg_attr(feature = "serde", serde(rename = "??"))]
+    // Coalesce,
 }
 
 impl LogicalOperator {
@@ -167,7 +167,7 @@ impl LogicalOperator {
         match self {
             Self::Or => "||",
             Self::And => "&&",
-            Self::Coalesce => "??",
+            // Self::Coalesce => "??",
         }
     }
 }
@@ -177,7 +177,7 @@ impl GetPrecedence for LogicalOperator {
         match self {
             Self::Or => Precedence::LogicalOr,
             Self::And => Precedence::LogicalAnd,
-            Self::Coalesce => Precedence::Coalesce,
+            // Self::Coalesce => Precedence::Coalesce,
         }
     }
 }

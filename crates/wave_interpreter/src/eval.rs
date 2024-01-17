@@ -1,9 +1,11 @@
 use wave_ast::{
-    ast::{BinaryExpression, Expression, ExpressionStatement, Program, Statement},
+    ast::{
+        BinaryExpression, Expression, ExpressionStatement, LogicalExpression, Program, Statement,
+    },
     BooleanLiteral, NumberLiteral, StringLiteral,
 };
 use wave_diagnostics::Result;
-use wave_syntax::operator::BinaryOperator;
+use wave_syntax::operator::{BinaryOperator, LogicalOperator};
 
 use crate::{ArithmeticWrapper, LogicalWrapper, Runtime};
 
@@ -62,7 +64,48 @@ impl Eval for Expression<'_> {
             Expression::NumberLiteral(expression) => Ok(NumberLiteral::eval(expression)?),
             Expression::StringLiteral(expression) => Ok(StringLiteral::eval(expression)?),
             Expression::BinaryExpression(expression) => Ok(BinaryExpression::eval(expression)?),
+            Expression::LogicalExpression(expression) => Ok(LogicalExpression::eval(expression)?),
             _ => unimplemented!(),
+        }
+    }
+}
+
+#[rustfmt::skip]
+impl Eval for BinaryExpression<'_> {
+    fn eval(&self) -> Result<ER> {
+        let left = &self.left;
+        let right = &self.right;
+
+        match self.operator {
+            BinaryOperator::Addition => Ok(ER::Number(ArithmeticWrapper(left).add_e(ArithmeticWrapper(right))?)),
+            BinaryOperator::Subtraction => Ok(ER::Number(ArithmeticWrapper(left).sub_e(ArithmeticWrapper(right))?)),
+            BinaryOperator::Multiplication => Ok(ER::Number(ArithmeticWrapper(left).mul_e(ArithmeticWrapper(right))?)),
+            BinaryOperator::Division => Ok(ER::Number(ArithmeticWrapper(left).div_e(ArithmeticWrapper(right))?)),
+            BinaryOperator::Remainder => Ok(ER::Number(ArithmeticWrapper(left).rem_e(ArithmeticWrapper(right))?)),
+            BinaryOperator::Exponential => Ok(ER::Number(ArithmeticWrapper(left).pow_e(ArithmeticWrapper(right))?)),
+            BinaryOperator::BitwiseOR => Ok(ER::Number(ArithmeticWrapper(left).b_or(ArithmeticWrapper(right))?)),
+            BinaryOperator::BitwiseAnd => Ok(ER::Number(ArithmeticWrapper(left).b_and(ArithmeticWrapper(right))?)),
+            BinaryOperator::BitwiseXOR => Ok(ER::Number(ArithmeticWrapper(left).b_xor(ArithmeticWrapper(right))?)),
+
+            BinaryOperator::LessThan => Ok(ER::Boolean(LogicalWrapper(left).lt(LogicalWrapper(right))?)),
+            BinaryOperator::LessEqualThan => Ok(ER::Boolean(LogicalWrapper(left).lt_e(LogicalWrapper(right))?)),
+            BinaryOperator::GreaterThan => Ok(ER::Boolean(LogicalWrapper(left).gt(LogicalWrapper(right))?)),
+            BinaryOperator::GreaterEqualThan => Ok(ER::Boolean(LogicalWrapper(left).gt_e(LogicalWrapper(right))?)),
+            BinaryOperator::Equality => Ok(ER::Boolean(LogicalWrapper(left).eq(LogicalWrapper(right))?)),
+            BinaryOperator::Inequality => Ok(ER::Boolean(LogicalWrapper(left).ne(LogicalWrapper(right))?)),
+        }
+    }
+}
+
+#[rustfmt::skip]
+impl Eval for LogicalExpression<'_> {
+    fn eval(&self) -> Result<ER> {
+        let left = &self.left;
+        let right = &self.right;
+
+        match self.operator {
+            LogicalOperator::Or => Ok(ER::Boolean(LogicalWrapper(left).or(LogicalWrapper(right))?)),
+            LogicalOperator::And => Ok(ER::Boolean( LogicalWrapper(left).and(LogicalWrapper(right))?,)),
         }
     }
 }
@@ -82,32 +125,5 @@ impl Eval for NumberLiteral<'_> {
 impl Eval for StringLiteral {
     fn eval(&self) -> Result<ER> {
         Ok(ER::String(self.value.as_str()))
-    }
-}
-
-#[rustfmt::skip]
-impl Eval for BinaryExpression<'_> {
-    fn eval(&self) -> Result<ER> {
-        let left = &self.left;
-        let right = &self.right;
-
-        match self.operator {
-            BinaryOperator::Addition => Ok(ER::Number( ArithmeticWrapper(left).add_e(ArithmeticWrapper(right))?)),
-            BinaryOperator::Subtraction => Ok(ER::Number( ArithmeticWrapper(left).sub_e(ArithmeticWrapper(right))?)),
-            BinaryOperator::Multiplication => Ok(ER::Number( ArithmeticWrapper(left).mul_e(ArithmeticWrapper(right))?)),
-            BinaryOperator::Division => Ok(ER::Number( ArithmeticWrapper(left).div_e(ArithmeticWrapper(right))?)),
-            BinaryOperator::Remainder => Ok(ER::Number( ArithmeticWrapper(left).rem_e(ArithmeticWrapper(right))?)),
-            BinaryOperator::Exponential => Ok(ER::Number( ArithmeticWrapper(left).pow_e(ArithmeticWrapper(right))?)),
-            BinaryOperator::BitwiseOR => Ok(ER::Number(ArithmeticWrapper(left).b_or(ArithmeticWrapper(right))?)),
-            BinaryOperator::BitwiseAnd => Ok(ER::Number(ArithmeticWrapper(left).b_and(ArithmeticWrapper(right))?)),
-            BinaryOperator::BitwiseXOR => Ok(ER::Number(ArithmeticWrapper(left).b_xor(ArithmeticWrapper(right))?)),
-
-            BinaryOperator::LessThan => Ok(ER::Boolean(LogicalWrapper(left).lt(LogicalWrapper(right))?)),
-            BinaryOperator::LessEqualThan => Ok(ER::Boolean(LogicalWrapper(left).lt_e(LogicalWrapper(right))?)),
-            BinaryOperator::GreaterThan => Ok(ER::Boolean(LogicalWrapper(left).gt(LogicalWrapper(right))?)),
-            BinaryOperator::GreaterEqualThan => Ok(ER::Boolean(LogicalWrapper(left).gt_e(LogicalWrapper(right))?)),
-            BinaryOperator::Equality => Ok(ER::Boolean(LogicalWrapper(left).eq(LogicalWrapper(right))?)),
-            BinaryOperator::Inequality => Ok(ER::Boolean(LogicalWrapper(left).ne(LogicalWrapper(right))?)),
-        }
     }
 }
