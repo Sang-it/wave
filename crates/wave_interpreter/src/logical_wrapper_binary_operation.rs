@@ -57,7 +57,7 @@ impl LogicalWrapper<'_, Expression<'_>> {
 
     pub fn not_a_boolean_error(&self) -> Error {
         let expression = &self.0;
-        diagnostics::InvalidNumber(expression.span()).into()
+        diagnostics::InvalidBoolean(expression.span()).into()
     }
 
     fn get_number(&self) -> Result<Number> {

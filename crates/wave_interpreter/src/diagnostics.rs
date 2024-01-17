@@ -16,6 +16,6 @@ pub struct InvalidNumber(#[label] pub Span);
 pub struct OperatorNotImplemented(pub &'static str, #[label] pub Span);
 
 #[derive(Debug, Error, Diagnostic)]
-#[error("Types are mismatched.")]
-#[diagnostic(help("This operation can only be performed on same types."))]
-pub struct MismatchedTypes();
+#[error("Not a boolean.")]
+#[diagnostic(help("This operation can only be performed on booleans."))]
+pub struct InvalidBoolean(#[label] pub Span);
