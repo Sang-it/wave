@@ -2,6 +2,7 @@ mod assignment_expression;
 mod binding;
 mod call_expression;
 mod class;
+mod expression;
 mod function_declaration;
 mod identifier;
 mod member_expression;
@@ -20,10 +21,10 @@ pub use class::{
     Class, ClassBody, ClassElement, ClassType, MethodDefinition, MethodDefinitionKind,
     PropertyDefinition, PropertyKey,
 };
+pub use expression::Expression;
 pub use identifier::IdentifierReference;
 pub use member_expression::{ComputedMemberExpression, MemberExpression, StaticMemberExpression};
 
-use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use std::hash::Hash;
 use wave_allocator::{Box, Vec};
 use wave_span::{Atom, Span};
@@ -69,29 +70,6 @@ pub enum Declaration<'a> {
     VariableDeclaration(Box<'a, VariableDeclaration<'a>>),
     FunctionDeclaration(Box<'a, Function<'a>>),
     ClassDeclaration(Box<'a, Class<'a>>),
-}
-
-#[derive(Debug, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize), serde(untagged))]
-pub enum Expression<'a> {
-    AssignmentExpression(Box<'a, AssignmentExpression<'a>>),
-    BooleanLiteral(Box<'a, BooleanLiteral>),
-    NullLiteral(Box<'a, NullLiteral>),
-    NumberLiteral(Box<'a, NumberLiteral<'a>>),
-    StringLiteral(Box<'a, StringLiteral>),
-    Identifier(Box<'a, IdentifierReference>),
-    BinaryExpression(Box<'a, BinaryExpression<'a>>),
-    SequenceExpression(Box<'a, SequenceExpression<'a>>),
-    ParenthesizedExpression(Box<'a, ParenthesizedExpression<'a>>),
-    ArrayExpression(Box<'a, ArrayExpression<'a>>),
-    CallExpression(Box<'a, CallExpression<'a>>),
-    UnaryExpression(Box<'a, UnaryExpression<'a>>),
-    UpdateExpression(Box<'a, UpdateExpression<'a>>),
-    LogicalExpression(Box<'a, LogicalExpression<'a>>),
-    MemberExpression(Box<'a, MemberExpression<'a>>),
-    ThisExpression(Box<'a, ThisExpression>),
-    Super(Box<'a, Super>),
-    NewExpression(Box<'a, NewExpression<'a>>),
 }
 
 #[derive(Debug, Hash)]
