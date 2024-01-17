@@ -33,8 +33,9 @@ Planned components:
 - [x] Implement class related expressions
 
 ## Roadmap => Interpreter (will be updated as we go)
-- [ ] Implement binary operations
-
+- [x] Implement binary operations
+- [ ] Implement environment scopes
+- [ ] Implement assignment statements
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
