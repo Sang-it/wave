@@ -17,11 +17,14 @@ fn main() {
     if ret.errors.is_empty() {
         let program = ret.program;
         let env = Environment::default();
-        let runtime = Runtime::new(env, program);
+        let runtime = Runtime::new(&allocator, env, program);
         let result = runtime.eval();
         match result {
             Ok(result) => println!("{result:?}"),
-            Err(error) => println!("{error:?}"),
+            Err(error) => {
+                let error = error.with_source_code(source_text.clone());
+                println!("{error:?}");
+            }
         }
     } else {
         for error in ret.errors {

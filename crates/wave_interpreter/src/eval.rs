@@ -1,6 +1,8 @@
+use wave_allocator::{Allocator, Vec};
 use wave_ast::{
     ast::{
-        BinaryExpression, Expression, ExpressionStatement, LogicalExpression, Program, Statement,
+        ArrayExpression, ArrayExpressionElement, BinaryExpression, Expression, ExpressionStatement,
+        LogicalExpression, Program, Statement,
     },
     BooleanLiteral, NumberLiteral, StringLiteral,
 };
@@ -15,6 +17,7 @@ pub enum ER<'a> {
     Number(f64),
     Boolean(bool),
     String(&'a str),
+    Array(Vec<'a, ER<'a>>),
     Null,
 }
 
@@ -22,38 +25,41 @@ pub trait Eval {
     fn eval(&self) -> Result<ER>;
 }
 
+pub trait EvalWithAllocator<'a> {
+    fn eval_a(&self, allocator: &'a Allocator) -> Result<ER>;
+}
+
 impl Eval for Runtime<'_> {
     fn eval(&self) -> Result<ER> {
-        Program::eval(&self.program)
+        Program::eval_a(&self.program, self.allocator)
     }
 }
 
-impl Eval for Program<'_> {
-    fn eval(&self) -> Result<ER> {
+impl<'a> EvalWithAllocator<'a> for Program<'a> {
+    fn eval_a(&self, allocator: &'a Allocator) -> Result<ER> {
         let mut result = ER::Null;
         for statement in &self.body {
-            result = Statement::eval(statement)?;
+            result = Statement::eval_a(statement, allocator)?;
         }
         Ok(result)
     }
 }
 
-impl Eval for Statement<'_> {
-    fn eval(&self) -> Result<ER> {
+impl<'a> EvalWithAllocator<'a> for Statement<'a> {
+    fn eval_a(&self, allocator: &'a Allocator) -> Result<ER> {
         match self {
             Statement::ExpressionStatement(expression_stmt) => {
-                let result = ExpressionStatement::eval(expression_stmt)?;
+                let result = ExpressionStatement::eval_a(expression_stmt, allocator)?;
                 Ok(result)
             }
-
             _ => unimplemented!(),
         }
     }
 }
 
-impl Eval for ExpressionStatement<'_> {
-    fn eval(&self) -> Result<ER> {
-        self.expression.eval()
+impl<'a> EvalWithAllocator<'a> for ExpressionStatement<'a> {
+    fn eval_a(&self, allocator: &'a Allocator) -> Result<ER> {
+        self.expression.eval_a(allocator)
     }
 }
 
@@ -66,6 +72,16 @@ impl Eval for Expression<'_> {
             Expression::BinaryExpression(expression) => Ok(BinaryExpression::eval(expression)?),
             Expression::LogicalExpression(expression) => Ok(LogicalExpression::eval(expression)?),
             _ => unimplemented!(),
+        }
+    }
+}
+
+#[rustfmt::skip]
+impl<'a> EvalWithAllocator<'a> for Expression<'a> {
+    fn eval_a(&self, allocator: &'a Allocator) -> Result<ER> {
+        match &self {
+            Expression::ArrayExpression(expression) => { Ok(ArrayExpression::eval_a(expression, allocator)?) }
+            _ => { self.eval() }
         }
     }
 }
@@ -106,6 +122,24 @@ impl Eval for LogicalExpression<'_> {
         match self.operator {
             LogicalOperator::Or => Ok(ER::Boolean(LogicalWrapper(left).or(LogicalWrapper(right))?)),
             LogicalOperator::And => Ok(ER::Boolean( LogicalWrapper(left).and(LogicalWrapper(right))?,)),
+        }
+    }
+}
+
+impl<'a> EvalWithAllocator<'a> for ArrayExpression<'a> {
+    fn eval_a(&self, allocator: &'a Allocator) -> Result<ER> {
+        let mut result = Vec::new_in(allocator);
+        for expression in &self.elements {
+            result.push(expression.eval_a(allocator)?);
+        }
+        Ok(ER::Array(result))
+    }
+}
+
+impl<'a> EvalWithAllocator<'a> for ArrayExpressionElement<'a> {
+    fn eval_a(&self, allocator: &'a Allocator) -> Result<ER> {
+        match self {
+            ArrayExpressionElement::Expression(expression) => Ok(expression.eval_a(allocator)?),
         }
     }
 }
