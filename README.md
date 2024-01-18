@@ -35,8 +35,12 @@ Planned components:
 ## Roadmap => Interpreter (will be updated as we go)
 - [x] Implement binary operations
 - [x] Implement logical operations
-- [ ] Implement environment scopes
-- [ ] Implement assignment statements
+- [x] Implement environment scopes
+- [x] Implement assignment statements
+- [ ] Implement if statements
+- [ ] Implement functions
+- [ ] Implement return statement
+- [ ] Implement scoped environment
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
