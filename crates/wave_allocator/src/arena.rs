@@ -64,7 +64,7 @@ impl<'alloc, T: Hash> Hash for Box<'alloc, T> {
 }
 
 /// Bumpalo Vec
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Vec<'alloc, T>(collections::Vec<'alloc, T>);
 
 impl<'alloc, T> Vec<'alloc, T> {

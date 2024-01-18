@@ -1,8 +1,6 @@
 use std::env;
 use wave_allocator::Allocator;
-use wave_interpreter::environment::Environment;
-use wave_interpreter::eval::Eval;
-use wave_interpreter::runtime::Runtime;
+use wave_interpreter::{eval::eval_runtime, runtime::Runtime};
 use wave_parser::Parser;
 
 fn main() {
@@ -16,9 +14,8 @@ fn main() {
 
     if ret.errors.is_empty() {
         let program = ret.program;
-        let env = Environment::default();
-        let runtime = Runtime::new(&allocator, env, program);
-        let result = runtime.eval();
+        let runtime = Runtime::new(program, &allocator);
+        let result = eval_runtime(runtime);
         match result {
             Ok(result) => println!("{result:?}"),
             Err(error) => {
