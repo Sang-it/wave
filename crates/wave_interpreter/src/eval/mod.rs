@@ -1,16 +1,18 @@
-use wave_allocator::{Allocator, Box, Vec};
+use crate::diagnostics;
+use crate::{environment::Environment, Runtime};
+use std::{f64::consts::PI, vec::Vec as SVec};
+use wave_allocator::{Box, Vec};
 use wave_ast::{
     ast::{
-        ArrayExpression, ArrayExpressionElement, BindingPatternKind, Declaration, Expression,
-        ExpressionStatement, IdentifierReference, Program, Statement, VariableDeclaration,
-        VariableDeclarator,
+        ArrayExpression, ArrayExpressionElement, BinaryExpression, BindingPatternKind, Declaration,
+        Expression, ExpressionStatement, IdentifierReference, LogicalExpression, Program,
+        Statement, VariableDeclaration, VariableDeclarator,
     },
     BooleanLiteral, NumberLiteral, StringLiteral,
 };
 use wave_diagnostics::Result;
-
-use crate::{environment::Environment, Runtime};
-use std::vec::Vec as SVec;
+use wave_span::GetSpan;
+use wave_syntax::operator::{BinaryOperator, LogicalOperator};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ER {
@@ -22,7 +24,7 @@ pub enum ER {
 }
 
 pub fn load_environment(environment: &mut Box<'_, Environment>) {
-    environment.define("PI".into(), ER::Number(3.4));
+    environment.define("PI".into(), ER::Number(PI));
 }
 
 pub fn eval_runtime(runtime: Runtime) -> Result<ER> {
@@ -109,6 +111,10 @@ fn eval_expression(
         Expression::StringLiteral(expression) => eval_string_literal(expression),
         Expression::Identifier(expression) => eval_identifier(expression, environment),
         Expression::ArrayExpression(expression) => eval_array_expression(expression, environment),
+        Expression::BinaryExpression(expression) => eval_binary_expression(expression, environment),
+        Expression::LogicalExpression(expression) => {
+            eval_logical_expression(expression, environment)
+        }
         _ => unimplemented!(),
     }
 }
@@ -154,5 +160,148 @@ fn eval_array_expression_element(
 ) -> Result<ER> {
     match expression {
         ArrayExpressionElement::Expression(expression) => eval_expression(expression, environment),
+    }
+}
+
+fn eval_binary_expression(
+    expression: &BinaryExpression<'_>,
+    environment: &mut Box<'_, Environment>,
+) -> Result<ER> {
+    let left = &expression.left;
+    let right = &expression.right;
+    match expression.operator {
+        BinaryOperator::Addition
+        | BinaryOperator::Subtraction
+        | BinaryOperator::Multiplication
+        | BinaryOperator::Division
+        | BinaryOperator::Remainder
+        | BinaryOperator::Exponential => {
+            eval_arithmetic(left, right, environment, &expression.operator)
+        }
+
+        BinaryOperator::Equality
+        | BinaryOperator::Inequality
+        | BinaryOperator::LessThan
+        | BinaryOperator::LessEqualThan
+        | BinaryOperator::GreaterThan
+        | BinaryOperator::GreaterEqualThan => {
+            eval_ord(left, right, environment, &expression.operator)
+        }
+
+        BinaryOperator::BitwiseOR | BinaryOperator::BitwiseAnd | BinaryOperator::BitwiseXOR => {
+            eval_bitwise(left, right, environment, &expression.operator)
+        }
+    }
+}
+
+// Arithmetic operations
+fn eval_arithmetic(
+    left: &Expression<'_>,
+    right: &Expression<'_>,
+    environment: &mut Box<'_, Environment>,
+    operator: &BinaryOperator,
+) -> Result<ER> {
+    let l = eval_expression(left, environment)?;
+    let r = eval_expression(right, environment)?;
+
+    match (l, r) {
+        (ER::Number(left), ER::Number(right)) => match operator {
+            BinaryOperator::Addition => Ok(ER::Number(left + right)),
+            BinaryOperator::Subtraction => Ok(ER::Number(left - right)),
+            BinaryOperator::Multiplication => Ok(ER::Number(left * right)),
+            BinaryOperator::Division => Ok(ER::Number(left / right)),
+            BinaryOperator::Remainder => Ok(ER::Number(left % right)),
+            BinaryOperator::Exponential => Ok(ER::Number(left.powf(right))),
+            _ => unreachable!(),
+        },
+        _ => Err(diagnostics::InvalidNumber(left.span().merge(&right.span())).into()),
+    }
+}
+
+// Ord operations
+fn eval_ord(
+    left: &Expression<'_>,
+    right: &Expression<'_>,
+    environment: &mut Box<'_, Environment>,
+    operator: &BinaryOperator,
+) -> Result<ER> {
+    let l = eval_expression(left, environment)?;
+    let r = eval_expression(right, environment)?;
+
+    match (l, r) {
+        (ER::Number(l), ER::Number(r)) => match operator {
+            BinaryOperator::LessThan => Ok(ER::Boolean(l < r)),
+            BinaryOperator::LessEqualThan => Ok(ER::Boolean(l <= r)),
+            BinaryOperator::GreaterThan => Ok(ER::Boolean(l > r)),
+            BinaryOperator::GreaterEqualThan => Ok(ER::Boolean(l >= r)),
+            BinaryOperator::Equality => Ok(ER::Boolean(l == r)),
+            BinaryOperator::Inequality => Ok(ER::Boolean(l != r)),
+            _ => unreachable!(),
+        },
+        (ER::Boolean(l), ER::Boolean(r)) => match operator {
+            BinaryOperator::Equality => Ok(ER::Boolean(l == r)),
+            BinaryOperator::Inequality => Ok(ER::Boolean(l != r)),
+            _ => Err(diagnostics::InvalidNumber(left.span().merge(&right.span())).into()),
+        },
+
+        (ER::String(l), ER::String(r)) => match operator {
+            BinaryOperator::Equality => Ok(ER::Boolean(l == r)),
+            BinaryOperator::Inequality => Ok(ER::Boolean(l != r)),
+            _ => Err(diagnostics::InvalidNumber(left.span().merge(&right.span())).into()),
+        },
+        _ => Err(diagnostics::TypeMismatch(left.span().merge(&right.span())).into()),
+    }
+}
+
+// Bitwise operations
+fn eval_bitwise(
+    left: &Expression<'_>,
+    right: &Expression<'_>,
+    environment: &mut Box<'_, Environment>,
+    operator: &BinaryOperator,
+) -> Result<ER> {
+    let l = eval_expression(left, environment)?;
+    let r = eval_expression(right, environment)?;
+
+    match (l, r) {
+        (ER::Number(left), ER::Number(right)) => match operator {
+            BinaryOperator::BitwiseOR => Ok(ER::Number((left as u64 | right as u64) as f64)),
+            BinaryOperator::BitwiseAnd => Ok(ER::Number((left as u64 & right as u64) as f64)),
+            BinaryOperator::BitwiseXOR => Ok(ER::Number((left as u64 ^ right as u64) as f64)),
+            _ => unreachable!(),
+        },
+        _ => Err(diagnostics::InvalidNumber(left.span().merge(&right.span())).into()),
+    }
+}
+
+fn eval_logical_expression(
+    expression: &LogicalExpression<'_>,
+    environment: &mut Box<'_, Environment>,
+) -> Result<ER> {
+    let left = &expression.left;
+    let right = &expression.right;
+
+    match expression.operator {
+        LogicalOperator::Or | LogicalOperator::And => {
+            eval_logical(left, right, environment, &expression.operator)
+        }
+    }
+}
+
+fn eval_logical(
+    left: &Expression<'_>,
+    right: &Expression<'_>,
+    environment: &mut Box<'_, Environment>,
+    operator: &LogicalOperator,
+) -> Result<ER> {
+    let l = eval_expression(left, environment)?;
+    let r = eval_expression(right, environment)?;
+
+    match (l, r) {
+        (ER::Boolean(left), ER::Boolean(right)) => match operator {
+            LogicalOperator::Or => Ok(ER::Boolean(left || right)),
+            LogicalOperator::And => Ok(ER::Boolean(left && right)),
+        },
+        _ => Err(diagnostics::InvalidBoolean(left.span().merge(&right.span())).into()),
     }
 }

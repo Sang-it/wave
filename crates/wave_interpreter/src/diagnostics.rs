@@ -19,3 +19,8 @@ pub struct OperatorNotImplemented(pub &'static str, #[label] pub Span);
 #[error("Not a boolean.")]
 #[diagnostic(help("This operation can only be performed on booleans."))]
 pub struct InvalidBoolean(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Type mismatch.")]
+#[diagnostic(help("This operation can only be performed on expressions with same type."))]
+pub struct TypeMismatch(#[label] pub Span);
