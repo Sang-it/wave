@@ -37,7 +37,7 @@ Planned components:
 - [x] Implement logical operations
 - [x] Implement environment scopes
 - [x] Implement assignment statements
-- [ ] Implement if statements
+- [x] Implement if statements
 - [ ] Implement functions
 - [ ] Implement return statement
 - [ ] Implement scoped environment
