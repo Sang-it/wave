@@ -51,7 +51,18 @@ fn eval_statement(statement: &Statement<'_>, environment: &mut Box<'_, Environme
             let result = eval_declaration(declaration, environment)?;
             Ok(result)
         }
-        _ => unimplemented!(),
+        Statement::IfStatement(if_stmt) => {
+            let result = eval_if_statement(if_stmt, environment)?;
+            Ok(result)
+        }
+        Statement::BlockStatement(block_stmt) => {
+            let mut result = ER::Null;
+            for statement in &block_stmt.body {
+                result = eval_statement(statement, environment)?;
+            }
+            Ok(result)
+        }
+        _ => unimplemented!("eval_statement"),
     }
 }
 
@@ -303,5 +314,23 @@ fn eval_logical(
             LogicalOperator::And => Ok(ER::Boolean(left && right)),
         },
         _ => Err(diagnostics::InvalidBoolean(left.span().merge(&right.span())).into()),
+    }
+}
+
+fn eval_if_statement(
+    if_stmt: &Box<'_, wave_ast::ast::IfStatement>,
+    environment: &mut Box<'_, Environment>,
+) -> Result<ER> {
+    let test = eval_expression(&if_stmt.test, environment)?;
+    match test {
+        ER::Boolean(true) => eval_statement(&if_stmt.consequent, environment),
+        ER::Boolean(false) => {
+            if let Some(alternate) = &if_stmt.alternate {
+                eval_statement(alternate, environment)
+            } else {
+                Ok(ER::Null)
+            }
+        }
+        _ => Err(diagnostics::InvalidBoolean(if_stmt.test.span()).into()),
     }
 }
