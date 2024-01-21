@@ -38,8 +38,9 @@ Planned components:
 - [x] Implement environment scopes
 - [x] Implement assignment statements
 - [x] Implement if statements
-- [ ] Implement functions
+- [x] Implement functions
 - [ ] Implement return statement
+- [ ] Implement function calls
 - [ ] Implement scoped environment
 
 <!-- ACKNOWLEDGMENTS -->
