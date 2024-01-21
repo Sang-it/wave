@@ -4,16 +4,16 @@ use wave_span::Atom;
 use crate::eval::ER;
 
 #[derive(Default, Debug)]
-pub struct Environment {
-    pub values: FxHashMap<Atom, ER>,
+pub struct Environment<'a> {
+    pub values: FxHashMap<Atom, ER<'a>>,
 }
 
-impl Environment {
-    pub fn define(&mut self, name: Atom, value: ER) {
+impl<'a> Environment<'a> {
+    pub fn define(&mut self, name: Atom, value: ER<'a>) {
         self.values.insert(name, value);
     }
 
-    pub fn get(&self, name: Atom) -> Option<&ER> {
+    pub fn get(&self, name: Atom) -> Option<&ER<'a>> {
         self.values.get(&name)
     }
 }

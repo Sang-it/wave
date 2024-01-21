@@ -1,7 +1,9 @@
 use crate::diagnostics;
 use crate::{environment::Environment, Runtime};
+use std::ptr;
 use std::{f64::consts::PI, vec::Vec as SVec};
 use wave_allocator::{Box, Vec};
+use wave_ast::ast::{Function, IfStatement};
 use wave_ast::{
     ast::{
         ArrayExpression, ArrayExpressionElement, BinaryExpression, BindingPatternKind, Declaration,
@@ -14,13 +16,31 @@ use wave_diagnostics::Result;
 use wave_span::GetSpan;
 use wave_syntax::operator::{BinaryOperator, LogicalOperator};
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum ER {
+#[derive(Debug)]
+pub enum ER<'a> {
     Number(f64),
     Boolean(bool),
     String(String),
-    Array(SVec<ER>),
+    Array(SVec<ER<'a>>),
+    Function(Function<'a>),
     Null,
+}
+
+impl<'a> Clone for ER<'a> {
+    fn clone(&self) -> Self {
+        match self {
+            ER::Number(value) => ER::Number(*value),
+            ER::Boolean(value) => ER::Boolean(*value),
+            ER::String(value) => ER::String(value.to_owned()),
+            ER::Array(value) => ER::Array(value.to_owned()),
+            ER::Function(_) => ER::Null,
+            ER::Null => ER::Null,
+        }
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        *self = source.clone()
+    }
 }
 
 pub fn load_environment(environment: &mut Box<'_, Environment>) {
@@ -33,7 +53,10 @@ pub fn eval_runtime(runtime: Runtime) -> Result<ER> {
     eval_program(&runtime.program, &mut environment)
 }
 
-pub fn eval_program(program: &Program<'_>, environment: &mut Box<'_, Environment>) -> Result<ER> {
+pub fn eval_program<'a>(
+    program: &Program<'a>,
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     let mut result = ER::Null;
     for statement in &program.body {
         result = eval_statement(statement, environment)?;
@@ -41,7 +64,10 @@ pub fn eval_program(program: &Program<'_>, environment: &mut Box<'_, Environment
     Ok(result)
 }
 
-fn eval_statement(statement: &Statement<'_>, environment: &mut Box<'_, Environment>) -> Result<ER> {
+fn eval_statement<'a>(
+    statement: &Statement<'a>,
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     match statement {
         Statement::ExpressionStatement(expression_stmt) => {
             let result = eval_expression_statement(expression_stmt, environment)?;
@@ -66,31 +92,47 @@ fn eval_statement(statement: &Statement<'_>, environment: &mut Box<'_, Environme
     }
 }
 
-fn eval_declaration(
-    declaration: &Declaration<'_>,
-    environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+fn eval_declaration<'a>(
+    declaration: &Declaration<'a>,
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     match declaration {
         Declaration::VariableDeclaration(declaration) => {
             let result = eval_variable_declaration(declaration, environment)?;
             Ok(result)
         }
+        Declaration::FunctionDeclaration(declaration) => {
+            eval_function_declaration(declaration, environment)
+        }
         _ => unimplemented!("declaration"),
     }
 }
 
-fn eval_variable_declaration(
+fn eval_variable_declaration<'a>(
     declaration: &Box<'_, VariableDeclaration>,
-    environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     eval_variable_declarator(&declaration.declarations, environment)?;
     Ok(ER::Null)
 }
 
-fn eval_variable_declarator(
+fn eval_function_declaration<'a>(
+    declaration: &Box<'_, Function<'a>>,
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
+    unsafe {
+        let function = ptr::read(declaration).unbox();
+        if let Some(id) = &function.id {
+            environment.define(id.name.to_owned(), ER::Function(function));
+        }
+    }
+    Ok(ER::Null)
+}
+
+fn eval_variable_declarator<'a>(
     declarators: &Vec<'_, VariableDeclarator>,
     environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+) -> Result<ER<'a>> {
     for declarator in declarators {
         if declarator.init.is_none() {
             continue;
@@ -105,17 +147,17 @@ fn eval_variable_declarator(
     Ok(ER::Null)
 }
 
-fn eval_expression_statement(
+fn eval_expression_statement<'a>(
     expression_stmt: &Box<'_, ExpressionStatement>,
-    environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     eval_expression(&expression_stmt.expression, environment)
 }
 
-fn eval_expression(
+fn eval_expression<'a>(
     expression: &Expression<'_>,
-    environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     match expression {
         Expression::BooleanLiteral(expression) => eval_boolean_literal(expression),
         Expression::NumberLiteral(expression) => eval_number_literal(expression),
@@ -130,22 +172,22 @@ fn eval_expression(
     }
 }
 
-fn eval_boolean_literal(expression: &Box<'_, BooleanLiteral>) -> Result<ER> {
+fn eval_boolean_literal<'a>(expression: &Box<'_, BooleanLiteral>) -> Result<ER<'a>> {
     Ok(ER::Boolean(expression.value))
 }
 
-fn eval_number_literal(expression: &Box<'_, NumberLiteral>) -> Result<ER> {
+fn eval_number_literal<'a>(expression: &Box<'_, NumberLiteral>) -> Result<ER<'a>> {
     Ok(ER::Number(expression.value))
 }
 
-fn eval_string_literal(expression: &Box<'_, StringLiteral>) -> Result<ER> {
+fn eval_string_literal<'a>(expression: &Box<'_, StringLiteral>) -> Result<ER<'a>> {
     Ok(ER::String(expression.value.to_string()))
 }
 
-fn eval_identifier(
+fn eval_identifier<'a>(
     expression: &Box<'_, IdentifierReference>,
-    environment: &Box<'_, Environment>,
-) -> Result<ER> {
+    environment: &Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     let value = environment.get(expression.name.to_owned());
     match value {
         Some(value) => Ok(value.clone()),
@@ -153,10 +195,10 @@ fn eval_identifier(
     }
 }
 
-fn eval_array_expression(
+fn eval_array_expression<'a>(
     expression: &Box<'_, ArrayExpression>,
-    environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     let mut result = SVec::new();
     for element in &expression.elements {
         let value = eval_array_expression_element(element, environment)?;
@@ -165,19 +207,19 @@ fn eval_array_expression(
     Ok(ER::Array(result))
 }
 
-fn eval_array_expression_element(
+fn eval_array_expression_element<'a>(
     expression: &ArrayExpressionElement<'_>,
-    environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     match expression {
         ArrayExpressionElement::Expression(expression) => eval_expression(expression, environment),
     }
 }
 
-fn eval_binary_expression(
+fn eval_binary_expression<'a>(
     expression: &BinaryExpression<'_>,
     environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+) -> Result<ER<'a>> {
     let left = &expression.left;
     let right = &expression.right;
     match expression.operator {
@@ -206,12 +248,12 @@ fn eval_binary_expression(
 }
 
 // Arithmetic operations
-fn eval_arithmetic(
+fn eval_arithmetic<'a>(
     left: &Expression<'_>,
     right: &Expression<'_>,
     environment: &mut Box<'_, Environment>,
     operator: &BinaryOperator,
-) -> Result<ER> {
+) -> Result<ER<'a>> {
     let l = eval_expression(left, environment)?;
     let r = eval_expression(right, environment)?;
 
@@ -230,12 +272,12 @@ fn eval_arithmetic(
 }
 
 // Ord operations
-fn eval_ord(
+fn eval_ord<'a>(
     left: &Expression<'_>,
     right: &Expression<'_>,
     environment: &mut Box<'_, Environment>,
     operator: &BinaryOperator,
-) -> Result<ER> {
+) -> Result<ER<'a>> {
     let l = eval_expression(left, environment)?;
     let r = eval_expression(right, environment)?;
 
@@ -265,12 +307,12 @@ fn eval_ord(
 }
 
 // Bitwise operations
-fn eval_bitwise(
+fn eval_bitwise<'a>(
     left: &Expression<'_>,
     right: &Expression<'_>,
     environment: &mut Box<'_, Environment>,
     operator: &BinaryOperator,
-) -> Result<ER> {
+) -> Result<ER<'a>> {
     let l = eval_expression(left, environment)?;
     let r = eval_expression(right, environment)?;
 
@@ -285,10 +327,10 @@ fn eval_bitwise(
     }
 }
 
-fn eval_logical_expression(
+fn eval_logical_expression<'a>(
     expression: &LogicalExpression<'_>,
     environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+) -> Result<ER<'a>> {
     let left = &expression.left;
     let right = &expression.right;
 
@@ -299,12 +341,12 @@ fn eval_logical_expression(
     }
 }
 
-fn eval_logical(
+fn eval_logical<'a>(
     left: &Expression<'_>,
     right: &Expression<'_>,
     environment: &mut Box<'_, Environment>,
     operator: &LogicalOperator,
-) -> Result<ER> {
+) -> Result<ER<'a>> {
     let l = eval_expression(left, environment)?;
     let r = eval_expression(right, environment)?;
 
@@ -317,10 +359,10 @@ fn eval_logical(
     }
 }
 
-fn eval_if_statement(
-    if_stmt: &Box<'_, wave_ast::ast::IfStatement>,
-    environment: &mut Box<'_, Environment>,
-) -> Result<ER> {
+fn eval_if_statement<'a>(
+    if_stmt: &Box<'_, IfStatement<'a>>,
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
     let test = eval_expression(&if_stmt.test, environment)?;
     match test {
         ER::Boolean(true) => eval_statement(&if_stmt.consequent, environment),
