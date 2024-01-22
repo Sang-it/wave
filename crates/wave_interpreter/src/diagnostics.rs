@@ -28,3 +28,7 @@ pub struct TypeMismatch(#[label] pub Span);
 #[derive(Debug, Error, Diagnostic)]
 #[error("Variable not found.")]
 pub struct VariableNotFound(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Invalid number of arguments.")]
+pub struct InvalidNumberOfArguments(#[label] pub Span);

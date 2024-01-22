@@ -1,105 +1,70 @@
-use crate::diagnostics;
-use crate::{environment::Environment, Runtime};
-use std::ptr;
-use std::{f64::consts::PI, vec::Vec as SVec};
+pub mod eval_result;
+
+use crate::{diagnostics, environment::Environment, Runtime};
+use eval_result::ER;
+use std::{cell::RefCell, f64::consts::PI, ptr, rc::Rc, vec::Vec as StdVec};
 use wave_allocator::{Box, Vec};
-use wave_ast::ast::{CallExpression, Function, IfStatement};
 use wave_ast::{
     ast::{
-        ArrayExpression, ArrayExpressionElement, BinaryExpression, BindingPatternKind, Declaration,
-        Expression, ExpressionStatement, IdentifierReference, LogicalExpression, Program,
-        Statement, VariableDeclaration, VariableDeclarator,
+        Argument, ArrayExpression, ArrayExpressionElement, BinaryExpression, BindingPatternKind,
+        CallExpression, Declaration, Expression, ExpressionStatement, FormalParameter, Function,
+        IdentifierReference, IfStatement, LogicalExpression, Program, Statement,
+        VariableDeclaration, VariableDeclarator,
     },
     BooleanLiteral, NumberLiteral, StringLiteral,
 };
 use wave_diagnostics::Result;
-use wave_span::GetSpan;
+use wave_span::{Atom, GetSpan, Span};
 use wave_syntax::operator::{BinaryOperator, LogicalOperator};
-
-#[derive(Debug)]
-pub enum ER<'a> {
-    Number(f64),
-    Boolean(bool),
-    String(String),
-    Array(SVec<ER<'a>>),
-    Function(Function<'a>),
-    Null,
-}
-
-impl<'a> Clone for ER<'a> {
-    fn clone(&self) -> Self {
-        match self {
-            ER::Number(value) => ER::Number(*value),
-            ER::Boolean(value) => ER::Boolean(*value),
-            ER::String(value) => ER::String(value.to_owned()),
-            ER::Array(value) => ER::Array(value.to_owned()),
-            ER::Function(value) =>
-            // TODO: This should be safe -- I think.
-            unsafe {
-                let function = ptr::read(value);
-                ER::Function(function)
-            },
-            ER::Null => ER::Null,
-        }
-    }
-
-    fn clone_from(&mut self, source: &Self) {
-        *self = source.clone()
-    }
-}
 
 pub fn load_environment(environment: &mut Box<'_, Environment>) {
     environment.define("PI".into(), ER::Number(PI));
 }
 
 pub fn eval_runtime(runtime: Runtime) -> Result<ER> {
-    let mut environment = Box(runtime.arena.alloc(Environment::default()));
-    load_environment(&mut environment);
-    eval_program(&runtime.program, &mut environment)
+    let environment = Rc::new(RefCell::new(Environment::default()));
+    eval_program(&runtime.program, environment)
 }
 
 pub fn eval_program<'a>(
     program: &Program<'a>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
     let mut result = ER::Null;
     for statement in &program.body {
-        result = eval_statement(statement, environment)?;
+        result = eval_statement(statement, Rc::clone(&environment))?;
     }
     Ok(result)
 }
 
+#[rustfmt::skip]
 fn eval_statement<'a>(
     statement: &Statement<'a>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
     match statement {
-        Statement::ExpressionStatement(expression_stmt) => {
-            let result = eval_expression_statement(expression_stmt, environment)?;
-            Ok(result)
-        }
-        Statement::Declaration(declaration) => {
-            let result = eval_declaration(declaration, environment)?;
-            Ok(result)
-        }
-        Statement::IfStatement(if_stmt) => {
-            let result = eval_if_statement(if_stmt, environment)?;
-            Ok(result)
-        }
-        Statement::BlockStatement(block_stmt) => {
-            let mut result = ER::Null;
-            for statement in &block_stmt.body {
-                result = eval_statement(statement, environment)?;
-            }
-            Ok(result)
-        }
+        Statement::ExpressionStatement(expression_stmt) => eval_expression_statement(expression_stmt, environment),
+        Statement::Declaration(declaration) => eval_declaration(declaration, environment),
+        Statement::IfStatement(if_stmt) => eval_if_statement(if_stmt, environment),
+        Statement::BlockStatement(block_stmt) => eval_block_body(&block_stmt.body, environment),
         _ => unimplemented!("eval_statement"),
     }
 }
 
+fn eval_block_body<'a>(
+    body: &Vec<'_, Statement<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
+) -> Result<ER<'a>> {
+    let mut result = ER::Null;
+    for statement in body {
+        result = eval_statement(statement, Rc::clone(&environment))?;
+    }
+    Ok(result)
+}
+
 fn eval_declaration<'a>(
     declaration: &Declaration<'a>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
     match declaration {
         Declaration::VariableDeclaration(declaration) => {
@@ -115,7 +80,7 @@ fn eval_declaration<'a>(
 
 fn eval_variable_declaration<'a>(
     declaration: &Box<'_, VariableDeclaration>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment>>,
 ) -> Result<ER<'a>> {
     eval_variable_declarator(&declaration.declarations, environment)?;
     Ok(ER::Null)
@@ -123,12 +88,20 @@ fn eval_variable_declaration<'a>(
 
 fn eval_function_declaration<'a>(
     declaration: &Box<'_, Function<'a>>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
     unsafe {
         let function = ptr::read(declaration).unbox();
-        if let Some(id) = &function.id {
-            environment.define(id.name.to_owned(), ER::Function(function));
+        if let Some(id) = function.id {
+            if let Some(body) = function.body {
+                let params = function.params.unbox().items;
+                let body = body.unbox().statements;
+                let env = Rc::clone(&environment);
+                let function = ER::Function(params, body, env);
+                environment
+                    .borrow_mut()
+                    .define(id.name.to_owned(), function);
+            }
         }
     }
     Ok(ER::Null)
@@ -136,7 +109,7 @@ fn eval_function_declaration<'a>(
 
 fn eval_variable_declarator<'a>(
     declarators: &Vec<'_, VariableDeclarator>,
-    environment: &mut Box<'_, Environment>,
+    environment: Rc<RefCell<Environment>>,
 ) -> Result<ER<'a>> {
     for declarator in declarators {
         if declarator.init.is_none() {
@@ -144,8 +117,11 @@ fn eval_variable_declarator<'a>(
         }
         match &declarator.id.kind {
             BindingPatternKind::BindingIdentifier(identifier) => {
-                let value = eval_expression(declarator.init.as_ref().unwrap(), environment)?;
-                environment.define(identifier.name.to_owned(), value);
+                let value =
+                    eval_expression(declarator.init.as_ref().unwrap(), Rc::clone(&environment))?;
+                environment
+                    .borrow_mut()
+                    .define(identifier.name.to_owned(), value);
             }
         }
     }
@@ -154,14 +130,14 @@ fn eval_variable_declarator<'a>(
 
 fn eval_expression_statement<'a>(
     expression_stmt: &Box<'_, ExpressionStatement>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
     eval_expression(&expression_stmt.expression, environment)
 }
 
 fn eval_expression<'a>(
     expression: &Expression<'_>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
     match expression {
         Expression::BooleanLiteral(expression) => eval_boolean_literal(expression),
@@ -192,20 +168,21 @@ fn eval_string_literal<'a>(expression: &Box<'_, StringLiteral>) -> Result<ER<'a>
 
 fn eval_identifier<'a>(
     expression: &Box<'_, IdentifierReference>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
     environment
+        .borrow()
         .get(expression.name.to_owned(), expression.span)
         .map(|v| v.clone())
 }
 
 fn eval_array_expression<'a>(
     expression: &Box<'_, ArrayExpression>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
-    let mut result = SVec::new();
+    let mut result = StdVec::new();
     for element in &expression.elements {
-        let value = eval_array_expression_element(element, environment)?;
+        let value = eval_array_expression_element(element, Rc::clone(&environment))?;
         result.push(value);
     }
     Ok(ER::Array(result))
@@ -213,16 +190,18 @@ fn eval_array_expression<'a>(
 
 fn eval_array_expression_element<'a>(
     expression: &ArrayExpressionElement<'_>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
     match expression {
-        ArrayExpressionElement::Expression(expression) => eval_expression(expression, environment),
+        ArrayExpressionElement::Expression(expression) => {
+            eval_expression(expression, Rc::clone(&environment))
+        }
     }
 }
 
 fn eval_binary_expression<'a>(
     expression: &BinaryExpression<'_>,
-    environment: &mut Box<'_, Environment>,
+    environment: Rc<RefCell<Environment>>,
 ) -> Result<ER<'a>> {
     let left = &expression.left;
     let right = &expression.right;
@@ -255,13 +234,13 @@ fn eval_binary_expression<'a>(
 fn eval_arithmetic<'a>(
     left: &Expression<'_>,
     right: &Expression<'_>,
-    environment: &mut Box<'_, Environment>,
+    environment: Rc<RefCell<Environment>>,
     operator: &BinaryOperator,
 ) -> Result<ER<'a>> {
-    let l = eval_expression(left, environment)?;
-    let r = eval_expression(right, environment)?;
+    let left_eval = eval_expression(left, Rc::clone(&environment))?;
+    let right_eval = eval_expression(right, Rc::clone(&environment))?;
 
-    match (l, r) {
+    match (left_eval, right_eval) {
         (ER::Number(left), ER::Number(right)) => match operator {
             BinaryOperator::Addition => Ok(ER::Number(left + right)),
             BinaryOperator::Subtraction => Ok(ER::Number(left - right)),
@@ -279,13 +258,13 @@ fn eval_arithmetic<'a>(
 fn eval_ord<'a>(
     left: &Expression<'_>,
     right: &Expression<'_>,
-    environment: &mut Box<'_, Environment>,
+    environment: Rc<RefCell<Environment>>,
     operator: &BinaryOperator,
 ) -> Result<ER<'a>> {
-    let l = eval_expression(left, environment)?;
-    let r = eval_expression(right, environment)?;
+    let left_eval = eval_expression(left, Rc::clone(&environment))?;
+    let right_eval = eval_expression(right, Rc::clone(&environment))?;
 
-    match (l, r) {
+    match (left_eval, right_eval) {
         (ER::Number(l), ER::Number(r)) => match operator {
             BinaryOperator::LessThan => Ok(ER::Boolean(l < r)),
             BinaryOperator::LessEqualThan => Ok(ER::Boolean(l <= r)),
@@ -314,13 +293,13 @@ fn eval_ord<'a>(
 fn eval_bitwise<'a>(
     left: &Expression<'_>,
     right: &Expression<'_>,
-    environment: &mut Box<'_, Environment>,
+    environment: Rc<RefCell<Environment>>,
     operator: &BinaryOperator,
 ) -> Result<ER<'a>> {
-    let l = eval_expression(left, environment)?;
-    let r = eval_expression(right, environment)?;
+    let left_eval = eval_expression(left, Rc::clone(&environment))?;
+    let right_eval = eval_expression(right, Rc::clone(&environment))?;
 
-    match (l, r) {
+    match (left_eval, right_eval) {
         (ER::Number(left), ER::Number(right)) => match operator {
             BinaryOperator::BitwiseOR => Ok(ER::Number((left as u64 | right as u64) as f64)),
             BinaryOperator::BitwiseAnd => Ok(ER::Number((left as u64 & right as u64) as f64)),
@@ -333,7 +312,7 @@ fn eval_bitwise<'a>(
 
 fn eval_logical_expression<'a>(
     expression: &LogicalExpression<'_>,
-    environment: &mut Box<'_, Environment>,
+    environment: Rc<RefCell<Environment>>,
 ) -> Result<ER<'a>> {
     let left = &expression.left;
     let right = &expression.right;
@@ -348,13 +327,13 @@ fn eval_logical_expression<'a>(
 fn eval_logical<'a>(
     left: &Expression<'_>,
     right: &Expression<'_>,
-    environment: &mut Box<'_, Environment>,
+    environment: Rc<RefCell<Environment>>,
     operator: &LogicalOperator,
 ) -> Result<ER<'a>> {
-    let l = eval_expression(left, environment)?;
-    let r = eval_expression(right, environment)?;
+    let left_eval = eval_expression(left, Rc::clone(&environment))?;
+    let right_eval = eval_expression(right, Rc::clone(&environment))?;
 
-    match (l, r) {
+    match (left_eval, right_eval) {
         (ER::Boolean(left), ER::Boolean(right)) => match operator {
             LogicalOperator::Or => Ok(ER::Boolean(left || right)),
             LogicalOperator::And => Ok(ER::Boolean(left && right)),
@@ -365,9 +344,9 @@ fn eval_logical<'a>(
 
 fn eval_if_statement<'a>(
     if_stmt: &Box<'_, IfStatement<'a>>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
-    let test = eval_expression(&if_stmt.test, environment)?;
+    let test = eval_expression(&if_stmt.test, Rc::clone(&environment))?;
     match test {
         ER::Boolean(true) => eval_statement(&if_stmt.consequent, environment),
         ER::Boolean(false) => {
@@ -383,32 +362,51 @@ fn eval_if_statement<'a>(
 
 fn eval_call_expression<'a>(
     expression: &Box<'_, CallExpression>,
-    environment: &mut Box<'_, Environment<'a>>,
+    environment: Rc<RefCell<Environment<'a>>>,
 ) -> Result<ER<'a>> {
-    let calle = &expression.callee;
-
-    match calle {
-        Expression::Identifier(identifier) => unsafe {
-            let mut result = ER::Null;
-
-            // TODO: This should be safe -- I think.
-            let env = ptr::read(environment);
-            let function = env.get(identifier.name.to_owned(), identifier.span)?;
-
-            // environment.extend(env);
-
-            let body = match function {
-                ER::Function(function) => &function.body,
-                _ => unreachable!(),
-            };
-
-            if let Some(body) = body {
-                for statement in &body.statements {
-                    result = eval_statement(statement, environment)?;
+    match &expression.callee {
+        Expression::Identifier(identifier) => {
+            let function = environment
+                .borrow()
+                .get(identifier.name.to_owned(), identifier.span)?;
+            let mut arguments = vec![];
+            for arg in &expression.arguments {
+                match arg {
+                    Argument::Expression(expression) => {
+                        arguments.push(eval_expression(expression, Rc::clone(&environment))?);
+                    }
                 }
             }
-            Ok(result)
-        },
-        _ => unimplemented!(),
+            apply_function(function, arguments, expression.span)
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn apply_function<'a>(
+    function: ER<'a>,
+    arguments: StdVec<ER<'a>>,
+    callee_span: Span,
+) -> Result<ER<'a>> {
+    match function {
+        ER::Function(params, body, env) => {
+            let env = Rc::new(RefCell::new(Environment::extend(env)));
+            if params.len() != arguments.len() {
+                Err(diagnostics::InvalidNumberOfArguments(callee_span).into())
+            } else {
+                for (param, arg) in params.iter().zip(arguments) {
+                    let param_name = get_atom_formal_parameters(param);
+                    env.borrow_mut().define(param_name, arg);
+                }
+                eval_block_body(&body, env)
+            }
+        }
+        _ => unreachable!(),
+    }
+}
+
+fn get_atom_formal_parameters(param: &FormalParameter) -> Atom {
+    match &param.pattern.kind {
+        BindingPatternKind::BindingIdentifier(identifier) => identifier.name.to_owned(),
     }
 }

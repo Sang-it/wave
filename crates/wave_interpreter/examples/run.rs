@@ -14,7 +14,7 @@ fn main() {
 
     if ret.errors.is_empty() {
         let program = ret.program;
-        let runtime = Runtime::new(program, &allocator);
+        let runtime = Runtime::new(program);
         let result = eval_runtime(runtime);
         match result {
             Ok(result) => println!("{result:?}"),

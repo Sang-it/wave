@@ -1,9 +1,8 @@
 let x = 10;
 let y = 20;
 
-function test () {
-    x + y
+function test (a, b) {
+    a + b
 }
 
-test()
-
+test( x, y  )
