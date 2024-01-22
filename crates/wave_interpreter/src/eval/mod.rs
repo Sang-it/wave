@@ -3,7 +3,7 @@ use crate::{environment::Environment, Runtime};
 use std::ptr;
 use std::{f64::consts::PI, vec::Vec as SVec};
 use wave_allocator::{Box, Vec};
-use wave_ast::ast::{Function, IfStatement};
+use wave_ast::ast::{CallExpression, Function, IfStatement};
 use wave_ast::{
     ast::{
         ArrayExpression, ArrayExpressionElement, BinaryExpression, BindingPatternKind, Declaration,
@@ -33,7 +33,12 @@ impl<'a> Clone for ER<'a> {
             ER::Boolean(value) => ER::Boolean(*value),
             ER::String(value) => ER::String(value.to_owned()),
             ER::Array(value) => ER::Array(value.to_owned()),
-            ER::Function(_) => ER::Null,
+            ER::Function(value) =>
+            // TODO: This should be safe -- I think.
+            unsafe {
+                let function = ptr::read(value);
+                ER::Function(function)
+            },
             ER::Null => ER::Null,
         }
     }
@@ -168,6 +173,7 @@ fn eval_expression<'a>(
         Expression::LogicalExpression(expression) => {
             eval_logical_expression(expression, environment)
         }
+        Expression::CallExpression(expression) => eval_call_expression(expression, environment),
         _ => unimplemented!(),
     }
 }
@@ -186,13 +192,11 @@ fn eval_string_literal<'a>(expression: &Box<'_, StringLiteral>) -> Result<ER<'a>
 
 fn eval_identifier<'a>(
     expression: &Box<'_, IdentifierReference>,
-    environment: &Box<'_, Environment<'a>>,
+    environment: &mut Box<'_, Environment<'a>>,
 ) -> Result<ER<'a>> {
-    let value = environment.get(expression.name.to_owned());
-    match value {
-        Some(value) => Ok(value.clone()),
-        None => Ok(ER::Null),
-    }
+    environment
+        .get(expression.name.to_owned(), expression.span)
+        .map(|v| v.clone())
 }
 
 fn eval_array_expression<'a>(
@@ -374,5 +378,37 @@ fn eval_if_statement<'a>(
             }
         }
         _ => Err(diagnostics::InvalidBoolean(if_stmt.test.span()).into()),
+    }
+}
+
+fn eval_call_expression<'a>(
+    expression: &Box<'_, CallExpression>,
+    environment: &mut Box<'_, Environment<'a>>,
+) -> Result<ER<'a>> {
+    let calle = &expression.callee;
+
+    match calle {
+        Expression::Identifier(identifier) => unsafe {
+            let mut result = ER::Null;
+
+            // TODO: This should be safe -- I think.
+            let env = ptr::read(environment);
+            let function = env.get(identifier.name.to_owned(), identifier.span)?;
+
+            // environment.extend(env);
+
+            let body = match function {
+                ER::Function(function) => &function.body,
+                _ => unreachable!(),
+            };
+
+            if let Some(body) = body {
+                for statement in &body.statements {
+                    result = eval_statement(statement, environment)?;
+                }
+            }
+            Ok(result)
+        },
+        _ => unimplemented!(),
     }
 }
