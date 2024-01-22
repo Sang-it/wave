@@ -1,8 +1,9 @@
 let x = 10;
-let y = 20;
+let y = 20 +10;
 
 function test (a, b) {
-    a + b
+    return 10;
+    a + b;
 }
 
 test( x, y  )

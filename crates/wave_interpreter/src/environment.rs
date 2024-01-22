@@ -1,18 +1,21 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{diagnostics, eval::eval_result::ER};
+use crate::{diagnostics, evaluator::Primitive};
 use rustc_hash::FxHashMap;
 use wave_diagnostics::Result;
 use wave_span::{Atom, Span};
 
 #[derive(Default, Debug)]
 pub struct Environment<'a> {
-    pub values: FxHashMap<Atom, ER<'a>>,
+    pub values: FxHashMap<Atom, Primitive<'a>>,
+    // TODO : Build the semantic analyzer first
+    // REFACTOR : Repalce this rc to environment with scope tree from the sematic analysis
+    // I can probably just slug the variable name and use the scope tree to find the variable
     pub outer: Option<Rc<RefCell<Environment<'a>>>>,
 }
 
 impl<'a> Environment<'a> {
-    pub fn get(&self, name: Atom, span: Span) -> Result<ER<'a>> {
+    pub fn get(&self, name: Atom, span: Span) -> Result<Primitive<'a>> {
         match self.values.get(&name) {
             Some(v) => Ok(v.clone()),
             None => match &self.outer {
@@ -22,7 +25,7 @@ impl<'a> Environment<'a> {
         }
     }
 
-    pub fn define(&mut self, name: Atom, value: ER<'a>) {
+    pub fn define(&mut self, name: Atom, value: Primitive<'a>) {
         self.values.insert(name, value);
     }
 

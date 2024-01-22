@@ -568,6 +568,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "wave_semantic"
+version = "0.1.0"
+dependencies = [
+ "index_vec",
+ "wave_allocator",
+ "wave_ast",
+ "wave_parser",
+ "wave_span",
+]
+
+[[package]]
 name = "wave_span"
 version = "0.1.0"
 dependencies = [
