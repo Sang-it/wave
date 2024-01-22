@@ -1,0 +1,17 @@
+[package]
+name = "wave_semantic"
+version = "0.1.0"
+authors.workspace = true
+description.workspace = true
+keywords.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+
+[dependencies]
+wave_ast       = { workspace = true}
+wave_span      = { workspace = true}
+wave_parser    = { workspace = true}
+wave_allocator = { workspace = true}
+index_vec      = { workspace = true}
