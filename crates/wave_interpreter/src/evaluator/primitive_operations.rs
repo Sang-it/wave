@@ -4,13 +4,59 @@ use std::rc::Rc;
 use crate::evaluator::Primitive;
 use crate::Runtime;
 use crate::{diagnostics, environment::Environment};
-use wave_ast::ast::Expression;
+use wave_ast::ast::{BinaryExpression, Expression, LogicalExpression};
 use wave_diagnostics::Result;
 use wave_span::GetSpan;
 use wave_syntax::operator::{BinaryOperator, LogicalOperator};
 
 impl<'a> Runtime<'a> {
-    // Arithmetic operations
+    pub fn eval_binary_expression(
+        &self,
+        expression: &BinaryExpression<'_>,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        let left = &expression.left;
+        let right = &expression.right;
+        match expression.operator {
+            BinaryOperator::Addition
+            | BinaryOperator::Subtraction
+            | BinaryOperator::Multiplication
+            | BinaryOperator::Division
+            | BinaryOperator::Remainder
+            | BinaryOperator::Exponential => {
+                self.eval_arithmetic(left, right, environment, &expression.operator)
+            }
+
+            BinaryOperator::Equality
+            | BinaryOperator::Inequality
+            | BinaryOperator::LessThan
+            | BinaryOperator::LessEqualThan
+            | BinaryOperator::GreaterThan
+            | BinaryOperator::GreaterEqualThan => {
+                self.eval_ord(left, right, environment, &expression.operator)
+            }
+
+            BinaryOperator::BitwiseOR | BinaryOperator::BitwiseAnd | BinaryOperator::BitwiseXOR => {
+                self.eval_bitwise(left, right, environment, &expression.operator)
+            }
+        }
+    }
+
+    pub fn eval_logical_expression(
+        &self,
+        expression: &LogicalExpression<'_>,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        let left = &expression.left;
+        let right = &expression.right;
+
+        match expression.operator {
+            LogicalOperator::Or | LogicalOperator::And => {
+                self.eval_logical(left, right, environment, &expression.operator)
+            }
+        }
+    }
+
     pub fn eval_arithmetic(
         &self,
         left: &Expression<'_>,
@@ -35,7 +81,6 @@ impl<'a> Runtime<'a> {
         }
     }
 
-    // Ord operations
     pub fn eval_ord(
         &self,
         left: &Expression<'_>,
@@ -71,7 +116,6 @@ impl<'a> Runtime<'a> {
         }
     }
 
-    // Bitwise operations
     pub fn eval_bitwise(
         &self,
         left: &Expression<'_>,

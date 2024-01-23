@@ -1,9 +1,12 @@
-let x = 10;
+let x = false;
 let y = 20 +10;
+
+let z = null;
 
 function test (a, b) {
     return 10;
-    a + b;
 }
 
-test( x, y  )
+x &&= false
+
+test(x,y)

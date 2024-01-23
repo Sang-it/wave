@@ -6,12 +6,8 @@ use crate::evaluator::Primitive;
 use crate::Runtime;
 use std::vec::Vec as StdVec;
 use wave_allocator::Box;
-use wave_ast::ast::{
-    ArrayExpression, ArrayExpressionElement, BinaryExpression, Expression, IdentifierReference,
-    LogicalExpression,
-};
+use wave_ast::ast::{ArrayExpression, ArrayExpressionElement, Expression, IdentifierReference};
 use wave_diagnostics::Result;
-use wave_syntax::operator::{BinaryOperator, LogicalOperator};
 
 impl<'a> Runtime<'a> {
     pub fn eval_expression(
@@ -36,6 +32,10 @@ impl<'a> Runtime<'a> {
             Expression::CallExpression(expression) => {
                 self.eval_call_expression(expression, environment)
             }
+            Expression::AssignmentExpression(expression) => {
+                self.eval_assignment_expression(expression, environment)
+            }
+            Expression::NullLiteral(_) => Ok(Primitive::Null),
             _ => unimplemented!(),
         }
     }
@@ -72,53 +72,6 @@ impl<'a> Runtime<'a> {
         match expression {
             ArrayExpressionElement::Expression(expression) => {
                 self.eval_expression(expression, Rc::clone(&environment))
-            }
-        }
-    }
-
-    fn eval_binary_expression(
-        &self,
-        expression: &BinaryExpression<'_>,
-        environment: Rc<RefCell<Environment<'a>>>,
-    ) -> Result<Primitive<'a>> {
-        let left = &expression.left;
-        let right = &expression.right;
-        match expression.operator {
-            BinaryOperator::Addition
-            | BinaryOperator::Subtraction
-            | BinaryOperator::Multiplication
-            | BinaryOperator::Division
-            | BinaryOperator::Remainder
-            | BinaryOperator::Exponential => {
-                self.eval_arithmetic(left, right, environment, &expression.operator)
-            }
-
-            BinaryOperator::Equality
-            | BinaryOperator::Inequality
-            | BinaryOperator::LessThan
-            | BinaryOperator::LessEqualThan
-            | BinaryOperator::GreaterThan
-            | BinaryOperator::GreaterEqualThan => {
-                self.eval_ord(left, right, environment, &expression.operator)
-            }
-
-            BinaryOperator::BitwiseOR | BinaryOperator::BitwiseAnd | BinaryOperator::BitwiseXOR => {
-                self.eval_bitwise(left, right, environment, &expression.operator)
-            }
-        }
-    }
-
-    pub fn eval_logical_expression(
-        &self,
-        expression: &LogicalExpression<'_>,
-        environment: Rc<RefCell<Environment<'a>>>,
-    ) -> Result<Primitive<'a>> {
-        let left = &expression.left;
-        let right = &expression.right;
-
-        match expression.operator {
-            LogicalOperator::Or | LogicalOperator::And => {
-                self.eval_logical(left, right, environment, &expression.operator)
             }
         }
     }
