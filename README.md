@@ -36,12 +36,14 @@ Planned components:
 - [x] Implement binary operations
 - [x] Implement logical operations
 - [x] Implement environment scopes
-- [x] Implement assignment statements
+- [x] Implement variable declarations
 - [x] Implement if statements
 - [x] Implement functions
-- [ ] Implement return statement
-- [ ] Implement function calls
-- [ ] Implement scoped environment
+- [x] Implement return statement
+- [x] Implement function calls
+- [x] Implement scoped environment
+- [x] Implement assignment expressions
+- [ ] Implement while statement
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
