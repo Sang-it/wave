@@ -17,7 +17,7 @@ fn main() {
         let runtime = Runtime::new(program);
         let result = Runtime::eval(&runtime);
         match result {
-            Ok(result) => println!("{result:?}"),
+            Ok(_) => {}
             Err(error) => {
                 let error = error.with_source_code(source_text.clone());
                 println!("{error:?}");

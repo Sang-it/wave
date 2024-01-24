@@ -47,7 +47,6 @@ impl<'a> Runtime<'a> {
             Expression::UpdateExpression(expression) => {
                 self.eval_update_expression(expression, environment)
             }
-
             _ => unimplemented!(),
         }
     }

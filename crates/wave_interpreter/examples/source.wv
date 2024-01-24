@@ -3,5 +3,6 @@ function addRecur(number){
     return number + addRecur(number - 1);
 }
 
-addRecur(10);
+let a = addRecur(10);
 
+print(a)

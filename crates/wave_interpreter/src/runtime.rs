@@ -1,16 +1,34 @@
 use std::{cell::RefCell, rc::Rc};
 
-use crate::{environment::Environment, evaluator::Primitive};
+use crate::{
+    environment::Environment,
+    evaluator::{function::InbuiltFunction, Primitive},
+};
 use wave_ast::ast::Program;
 use wave_diagnostics::Result;
 
 pub struct Runtime<'a> {
     pub program: Program<'a>,
+    pub inbuilt_functions: Vec<InbuiltFunction>,
 }
 
 impl<'a> Runtime<'a> {
     pub fn new(program: Program<'a>) -> Self {
-        Self { program }
+        let mut inbuilt_functions = vec![];
+
+        fn print(arg: &Vec<Primitive>) {
+            println!("{:#?}", arg);
+        }
+
+        inbuilt_functions.push(InbuiltFunction {
+            name: "print".into(),
+            function: print,
+        });
+
+        Self {
+            program,
+            inbuilt_functions,
+        }
     }
 
     pub fn eval(&self) -> Result<Primitive<'a>> {

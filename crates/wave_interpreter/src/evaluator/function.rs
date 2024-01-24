@@ -12,6 +12,12 @@ use wave_ast::ast::{
 use wave_diagnostics::Result;
 use wave_span::{Atom, Span};
 
+#[derive(Clone)]
+pub struct InbuiltFunction {
+    pub name: Atom,
+    pub function: fn(&Vec<Primitive<'_>>),
+}
+
 impl<'a> Runtime<'a> {
     pub fn eval_function_declaration(
         &self,
@@ -22,13 +28,17 @@ impl<'a> Runtime<'a> {
             let function = ptr::read(declaration).unbox();
             if let Some(id) = function.id {
                 if let Some(body) = function.body {
+                    let function_name = id.name.to_owned();
+
+                    if self.is_inbuilt_function(&function_name) {
+                        return Err(diagnostics::CannotRedeclareInbuiltFunction(id.span).into());
+                    }
+
                     let params = function.params.unbox().items;
                     let body = body.unbox().statements;
                     let env = Rc::clone(&environment);
                     let function = Primitive::Function(params, body, env);
-                    environment
-                        .borrow_mut()
-                        .define(id.name.to_owned(), function);
+                    environment.borrow_mut().define(function_name, function);
                 }
             }
         }
@@ -42,9 +52,8 @@ impl<'a> Runtime<'a> {
     ) -> Result<Primitive<'a>> {
         match &expression.callee {
             Expression::Identifier(identifier) => {
-                let function = environment
-                    .borrow()
-                    .get(identifier.name.to_owned(), identifier.span)?;
+                let function_name = identifier.name.to_owned();
+
                 let mut arguments = vec![];
                 for arg in &expression.arguments {
                     match arg {
@@ -54,7 +63,16 @@ impl<'a> Runtime<'a> {
                         }
                     }
                 }
-                self.apply_function(function, arguments, expression.span)
+
+                if self.is_inbuilt_function(&function_name) {
+                    let in_built = self.get_in_built_function(&function_name);
+                    let function = in_built.function;
+                    function(&arguments);
+                    Ok(Primitive::Null)
+                } else {
+                    let function = environment.borrow().get(function_name, identifier.span)?;
+                    self.apply_function(function, arguments, expression.span)
+                }
             }
             _ => unreachable!(),
         }
@@ -95,5 +113,21 @@ impl<'a> Runtime<'a> {
             Primitive::Return(value) => Ok(*value),
             _ => Ok(primitive),
         }
+    }
+
+    pub fn is_inbuilt_function(&self, name: &Atom) -> bool {
+        self.inbuilt_functions
+            .iter()
+            .map(|f| &f.name)
+            .collect::<Vec<_>>()
+            .contains(&name)
+    }
+
+    pub fn get_in_built_function(&self, name: &Atom) -> InbuiltFunction {
+        self.inbuilt_functions
+            .iter()
+            .find(|f| f.name == *name)
+            .expect("Inbuilt function not found.")
+            .clone()
     }
 }

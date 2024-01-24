@@ -32,3 +32,8 @@ pub struct VariableNotFound(#[label] pub Span);
 #[derive(Debug, Error, Diagnostic)]
 #[error("Invalid number of arguments.")]
 pub struct InvalidNumberOfArguments(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Cannot redeclare inbuilt function.")]
+#[diagnostic(help("Rename the function to something else."))]
+pub struct CannotRedeclareInbuiltFunction(#[label] pub Span);
