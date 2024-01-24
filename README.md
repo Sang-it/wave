@@ -43,7 +43,9 @@ Planned components:
 - [x] Implement function calls
 - [x] Implement scoped environment
 - [x] Implement assignment expressions
-- [ ] Implement while statement
+- [x] Implement while statement
+- [ ] Implement unary operators
+- [ ] Implement update operators
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
