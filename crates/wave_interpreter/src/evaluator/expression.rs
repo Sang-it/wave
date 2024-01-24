@@ -6,7 +6,9 @@ use crate::evaluator::Primitive;
 use crate::Runtime;
 use std::vec::Vec as StdVec;
 use wave_allocator::Box;
-use wave_ast::ast::{ArrayExpression, ArrayExpressionElement, Expression, IdentifierReference};
+use wave_ast::ast::{
+    ArrayExpression, ArrayExpressionElement, Expression, IdentifierReference, SequenceExpression,
+};
 use wave_diagnostics::Result;
 
 impl<'a> Runtime<'a> {
@@ -38,6 +40,9 @@ impl<'a> Runtime<'a> {
             Expression::NullLiteral(_) => Ok(Primitive::Null),
             Expression::UnaryExpression(expression) => {
                 self.eval_unary_expression(expression, environment)
+            }
+            Expression::SequenceExpression(expression) => {
+                self.eval_sequence_expression(expression, environment)
             }
             _ => unimplemented!(),
         }
@@ -77,5 +82,17 @@ impl<'a> Runtime<'a> {
                 self.eval_expression(expression, Rc::clone(&environment))
             }
         }
+    }
+
+    fn eval_sequence_expression(
+        &self,
+        expression: &Box<'_, SequenceExpression<'_>>,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        let mut result = Primitive::Null;
+        for expression in &expression.expressions {
+            result = self.eval_expression(expression, Rc::clone(&environment))?;
+        }
+        Ok(result)
     }
 }
