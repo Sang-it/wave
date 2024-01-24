@@ -44,6 +44,10 @@ impl<'a> Runtime<'a> {
             Expression::SequenceExpression(expression) => {
                 self.eval_sequence_expression(expression, environment)
             }
+            Expression::UpdateExpression(expression) => {
+                self.eval_update_expression(expression, environment)
+            }
+
             _ => unimplemented!(),
         }
     }

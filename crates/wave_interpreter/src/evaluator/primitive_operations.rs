@@ -5,10 +5,13 @@ use crate::evaluator::Primitive;
 use crate::Runtime;
 use crate::{diagnostics, environment::Environment};
 use wave_allocator::Box;
-use wave_ast::ast::{BinaryExpression, Expression, LogicalExpression, UnaryExpression};
+use wave_ast::ast::{
+    BinaryExpression, Expression, LogicalExpression, SimpleAssignmentTarget, UnaryExpression,
+    UpdateExpression,
+};
 use wave_diagnostics::Result;
 use wave_span::GetSpan;
-use wave_syntax::operator::{BinaryOperator, LogicalOperator, UnaryOperator};
+use wave_syntax::operator::{BinaryOperator, LogicalOperator, UnaryOperator, UpdateOperator};
 
 impl<'a> Runtime<'a> {
     pub fn eval_binary_expression(
@@ -182,6 +185,48 @@ impl<'a> Runtime<'a> {
                 Primitive::Boolean(value) => Ok(Primitive::Boolean(!value)),
                 _ => Err(diagnostics::InvalidBoolean(expression.span).into()),
             },
+        }
+    }
+
+    pub fn eval_update_expression(
+        &self,
+        expression: &Box<'_, UpdateExpression>,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        let SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) = &expression.argument;
+
+        match expression.operator {
+            UpdateOperator::Increment => {
+                let value = environment
+                    .borrow()
+                    .get(identifier.name.to_owned(), identifier.span)?;
+                match value {
+                    Primitive::Number(value) => {
+                        let new_value = Primitive::Number(value + 1.0);
+                        environment
+                            .borrow_mut()
+                            .define(identifier.name.to_owned(), new_value.clone());
+                        Ok(new_value)
+                    }
+                    _ => Err(diagnostics::InvalidNumber(expression.span).into()),
+                }
+            }
+            UpdateOperator::Decrement => {
+                let value = environment
+                    .borrow()
+                    .get(identifier.name.to_owned(), identifier.span)?;
+
+                match value {
+                    Primitive::Number(value) => {
+                        let new_value = Primitive::Number(value + 1.0);
+                        environment
+                            .borrow_mut()
+                            .define(identifier.name.to_owned(), new_value.clone());
+                        Ok(new_value)
+                    }
+                    _ => Err(diagnostics::InvalidNumber(expression.span).into()),
+                }
+            }
         }
     }
 }
