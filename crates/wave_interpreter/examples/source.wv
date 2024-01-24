@@ -4,4 +4,3 @@ function addRecur(number){
 }
 
 addRecur(10);
-

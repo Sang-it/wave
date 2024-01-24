@@ -4,10 +4,11 @@ use std::rc::Rc;
 use crate::evaluator::Primitive;
 use crate::Runtime;
 use crate::{diagnostics, environment::Environment};
-use wave_ast::ast::{BinaryExpression, Expression, LogicalExpression};
+use wave_allocator::Box;
+use wave_ast::ast::{BinaryExpression, Expression, LogicalExpression, UnaryExpression};
 use wave_diagnostics::Result;
 use wave_span::GetSpan;
-use wave_syntax::operator::{BinaryOperator, LogicalOperator};
+use wave_syntax::operator::{BinaryOperator, LogicalOperator, UnaryOperator};
 
 impl<'a> Runtime<'a> {
     pub fn eval_binary_expression(
@@ -159,6 +160,28 @@ impl<'a> Runtime<'a> {
                 LogicalOperator::And => Ok(Primitive::Boolean(left && right)),
             },
             _ => Err(diagnostics::InvalidBoolean(left.span().merge(&right.span())).into()),
+        }
+    }
+
+    pub fn eval_unary_expression(
+        &self,
+        expression: &Box<'_, UnaryExpression>,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        let value = self.eval_expression(&expression.argument, Rc::clone(&environment))?;
+        match expression.operator {
+            UnaryOperator::UnaryPlus => match value {
+                Primitive::Number(value) => Ok(Primitive::Number(value.abs())),
+                _ => Err(diagnostics::InvalidNumber(expression.span).into()),
+            },
+            UnaryOperator::UnaryNegation => match value {
+                Primitive::Number(value) => Ok(Primitive::Number(-value)),
+                _ => Err(diagnostics::InvalidNumber(expression.span).into()),
+            },
+            UnaryOperator::LogicalNot => match value {
+                Primitive::Boolean(value) => Ok(Primitive::Boolean(!value)),
+                _ => Err(diagnostics::InvalidBoolean(expression.span).into()),
+            },
         }
     }
 }

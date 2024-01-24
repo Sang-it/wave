@@ -36,6 +36,9 @@ impl<'a> Runtime<'a> {
                 self.eval_assignment_expression(expression, environment)
             }
             Expression::NullLiteral(_) => Ok(Primitive::Null),
+            Expression::UnaryExpression(expression) => {
+                self.eval_unary_expression(expression, environment)
+            }
             _ => unimplemented!(),
         }
     }
