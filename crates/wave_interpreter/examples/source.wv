@@ -1,12 +1,7 @@
-let x = false;
-let y = 20 +10;
-
-let z = null;
-
-function test (a, b) {
-    return 10;
+function addRecur(number){
+    if (number == 0) return 0;
+    return number + addRecur(number - 1);
 }
 
-x &&= false
+addRecur(10);
 
-test(x,y)

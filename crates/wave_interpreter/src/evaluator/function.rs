@@ -76,7 +76,8 @@ impl<'a> Runtime<'a> {
                         let param_name = self.get_atom_formal_parameters(param);
                         env.borrow_mut().define(param_name, arg);
                     }
-                    self.eval_block(&body, env)
+                    let eval = self.eval_block(&body, env)?;
+                    self.unwrap_return_value(eval)
                 }
             }
             _ => unreachable!(),
@@ -86,6 +87,13 @@ impl<'a> Runtime<'a> {
     fn get_atom_formal_parameters(&self, param: &FormalParameter) -> Atom {
         match &param.pattern.kind {
             BindingPatternKind::BindingIdentifier(identifier) => identifier.name.to_owned(),
+        }
+    }
+
+    fn unwrap_return_value(&self, primitive: Primitive<'a>) -> Result<Primitive<'a>> {
+        match primitive {
+            Primitive::Return(value) => Ok(*value),
+            _ => Ok(primitive),
         }
     }
 }

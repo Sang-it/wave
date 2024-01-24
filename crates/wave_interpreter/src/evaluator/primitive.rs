@@ -16,6 +16,9 @@ pub enum Primitive<'a> {
         Vec<'a, Statement<'a>>,
         Rc<RefCell<Environment<'a>>>,
     ),
+    Return(Box<Primitive<'a>>),
+    Break,
+    Continue,
     Null,
 }
 
@@ -32,6 +35,9 @@ impl<'a> Clone for Primitive<'a> {
                 Primitive::Function(params, body, Rc::clone(environment))
             },
             Primitive::Null => Primitive::Null,
+            Primitive::Break => Primitive::Break,
+            Primitive::Continue => Primitive::Continue,
+            Primitive::Return(value) => Primitive::Return(Box::clone(value)),
         }
     }
 }
