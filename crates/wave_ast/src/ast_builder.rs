@@ -425,4 +425,8 @@ impl<'a> AstBuilder<'a> {
     ) -> ClassElement<'a> {
         ClassElement::PropertyDefinition(self.alloc(PropertyDefinition { span, key, value }))
     }
+
+    pub fn function_expression(&self, function: Box<'a, Function<'a>>) -> Expression<'a> {
+        Expression::FunctionExpression(function)
+    }
 }

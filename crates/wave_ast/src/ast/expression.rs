@@ -9,8 +9,8 @@ use crate::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::Box;
 
 use super::{
-    ArrayExpression, CallExpression, LogicalExpression, MemberExpression, NewExpression, Super,
-    ThisExpression, UnaryExpression, UpdateExpression,
+    ArrayExpression, CallExpression, Function, LogicalExpression, MemberExpression, NewExpression,
+    Super, ThisExpression, UnaryExpression, UpdateExpression,
 };
 
 #[derive(Debug, Hash)]
@@ -30,6 +30,8 @@ pub enum Expression<'a> {
     UnaryExpression(Box<'a, UnaryExpression<'a>>),
     UpdateExpression(Box<'a, UpdateExpression<'a>>),
     LogicalExpression(Box<'a, LogicalExpression<'a>>),
+    FunctionExpression(Box<'a, Function<'a>>),
+
     MemberExpression(Box<'a, MemberExpression<'a>>),
     ThisExpression(Box<'a, ThisExpression>),
     Super(Box<'a, Super>),
