@@ -266,6 +266,10 @@ impl<'a> Parser<'a> {
     fn parse_primary_expression(&mut self) -> Result<Expression<'a>> {
         let span = self.start_span();
 
+        if self.at_function() {
+            return self.parse_function_expression(span);
+        }
+
         match &self.cur_kind() {
             Kind::Ident => self.parse_identifier_expression(), // fast path, keywords are checked at the end
             Kind::LBrack => self.parse_array_expression(),

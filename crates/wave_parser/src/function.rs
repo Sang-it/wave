@@ -2,8 +2,8 @@ use std::cell::Cell;
 
 use wave_allocator::Box;
 use wave_ast::ast::{
-    BindingIdentifier, FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
-    Statement,
+    BindingIdentifier, Expression, FormalParameterKind, FormalParameters, Function, FunctionBody,
+    FunctionType, Statement,
 };
 use wave_diagnostics::Result;
 use wave_lexer::Kind;
@@ -68,6 +68,16 @@ impl<'a> Parser<'a> {
         let statements = self.with_context(Context::Return, |p| p.parse_statements())?;
         self.expect(Kind::RCurly)?;
         Ok(self.ast.function_body(self.end_span(span), statements))
+    }
+
+    pub(crate) fn parse_function_expression(&mut self, span: Span) -> Result<Expression<'a>> {
+        let func_kind = FunctionKind::Expression;
+        self.expect(Kind::Function)?;
+
+        let id = self.parse_function_id(func_kind);
+        let function = self.parse_function(span, id, func_kind)?;
+
+        Ok(self.ast.function_expression(function))
     }
 
     pub(crate) fn parse_formal_parameters(
