@@ -12,8 +12,8 @@ pub enum Primitive<'a> {
     String(String),
     Array(StdVec<Primitive<'a>>),
     Function(
-        Vec<'a, FormalParameter<'a>>,
-        Vec<'a, Statement<'a>>,
+        Option<Vec<'a, FormalParameter<'a>>>,
+        Option<Vec<'a, Statement<'a>>>,
         Rc<RefCell<Environment<'a>>>,
     ),
     Return(Box<Primitive<'a>>),

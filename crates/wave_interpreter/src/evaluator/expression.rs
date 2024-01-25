@@ -52,7 +52,7 @@ impl<'a> Runtime<'a> {
                 self.eval_parenthesized_expression(expression, environment)
             }
             Expression::FunctionExpression(expression) => {
-                self.eval_function_expression(expression, environment)
+                self.eval_function(expression, environment)
             }
             _ => unimplemented!(),
         }

@@ -19,30 +19,54 @@ pub struct InbuiltFunction {
 }
 
 impl<'a> Runtime<'a> {
-    pub fn eval_function_declaration(
+    pub fn eval_function(
         &self,
-        declaration: &Box<'_, Function<'a>>,
+        expression: &Box<'_, Function<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         unsafe {
-            let function = ptr::read(declaration).unbox();
-            if let Some(id) = function.id {
-                if let Some(body) = function.body {
-                    let function_name = id.name.to_owned();
+            let function = ptr::read(expression).unbox();
+            let params = function.params.unbox().items;
 
+            match (function.id, function.body) {
+                (Some(id), Some(body)) => {
+                    let function_name = id.name.to_owned();
                     if self.is_inbuilt_function(&function_name) {
                         return Err(diagnostics::CannotRedeclareInbuiltFunction(id.span).into());
                     }
-
-                    let params = function.params.unbox().items;
                     let body = body.unbox().statements;
-                    let env = Rc::clone(&environment);
-                    let function = Primitive::Function(params, body, env);
-                    environment.borrow_mut().define(function_name, function);
+                    let function =
+                        Primitive::Function(Some(params), Some(body), Rc::clone(&environment));
+                    environment
+                        .borrow_mut()
+                        .define(function_name, function.clone());
+                    Ok(function)
                 }
+                (None, Some(body)) => {
+                    let body = body.unbox().statements;
+                    let function =
+                        Primitive::Function(Some(params), Some(body), Rc::clone(&environment));
+                    Ok(function)
+                }
+                (Some(id), None) => {
+                    let function_name = id.name.to_owned();
+                    if self.is_inbuilt_function(&function_name) {
+                        return Err(diagnostics::CannotRedeclareInbuiltFunction(id.span).into());
+                    }
+                    let function = Primitive::Function(Some(params), None, Rc::clone(&environment));
+                    environment
+                        .borrow_mut()
+                        .define(function_name, function.clone());
+
+                    Ok(function)
+                }
+                (None, None) => Ok(Primitive::Function(
+                    Some(params),
+                    None,
+                    Rc::clone(&environment),
+                )),
             }
         }
-        Ok(Primitive::Null)
     }
 
     pub fn eval_call_expression(
@@ -55,6 +79,7 @@ impl<'a> Runtime<'a> {
                 let function_name = identifier.name.to_owned();
 
                 let mut arguments = vec![];
+
                 for arg in &expression.arguments {
                     match arg {
                         Argument::Expression(expression) => {
@@ -87,15 +112,31 @@ impl<'a> Runtime<'a> {
         match function {
             Primitive::Function(params, body, env) => {
                 let env = Rc::new(RefCell::new(Environment::extend(env)));
-                if params.len() != arguments.len() {
-                    Err(diagnostics::InvalidNumberOfArguments(callee_span).into())
-                } else {
-                    for (param, arg) in params.iter().zip(arguments) {
-                        let param_name = self.get_atom_formal_parameters(param);
-                        env.borrow_mut().define(param_name, arg);
+
+                match params {
+                    Some(params) => {
+                        if params.len() != arguments.len() {
+                            return Err(diagnostics::InvalidNumberOfArguments(callee_span).into());
+                        }
+
+                        for (param, arg) in params.iter().zip(arguments) {
+                            let param_name = self.get_atom_formal_parameters(param);
+                            env.borrow_mut().define(param_name, arg);
+                        }
                     }
-                    let eval = self.eval_block(&body, env)?;
-                    self.unwrap_return_value(eval)
+                    None => {
+                        if !arguments.is_empty() {
+                            return Err(diagnostics::InvalidNumberOfArguments(callee_span).into());
+                        }
+                    }
+                }
+
+                match body {
+                    Some(body) => {
+                        let eval = self.eval_block(&body, env)?;
+                        self.unwrap_return_value(eval)
+                    }
+                    None => Ok(Primitive::Null),
                 }
             }
             _ => unreachable!(),
@@ -129,34 +170,5 @@ impl<'a> Runtime<'a> {
             .find(|f| f.name == *name)
             .expect("Inbuilt function not found.")
             .clone()
-    }
-
-    pub fn eval_function_expression(
-        &self,
-        expression: &Box<'_, Function<'a>>,
-        environment: Rc<RefCell<Environment<'a>>>,
-    ) -> Result<Primitive<'a>> {
-        unsafe {
-            let function = ptr::read(expression).unbox();
-            if let Some(id) = function.id {
-                if let Some(body) = function.body {
-                    let function_name = id.name.to_owned();
-
-                    if self.is_inbuilt_function(&function_name) {
-                        return Err(diagnostics::CannotRedeclareInbuiltFunction(id.span).into());
-                    }
-
-                    let params = function.params.unbox().items;
-                    let body = body.unbox().statements;
-                    let function = Primitive::Function(params, body, Rc::clone(&environment));
-                    environment
-                        .borrow_mut()
-                        .define(function_name, function.clone());
-
-                    return Ok(function);
-                }
-            }
-            Ok(Primitive::Null)
-        }
     }
 }

@@ -9,10 +9,10 @@ function fibonacci(number){
     return fibonacci(number - 1) + fibonacci(number - 2);
 }
 
-let a = function add2 (number) {
+let a = function (number) {
     return number + 2;
 }
 
-let c = a(2)
-
-print(c)
+print( fibonacci(8) )
+print( addRecur(8) )
+print( a(3) )

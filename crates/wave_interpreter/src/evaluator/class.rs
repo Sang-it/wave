@@ -11,8 +11,8 @@ use wave_diagnostics::Result;
 impl<'a> Runtime<'a> {
     pub fn eval_class_declaration(
         &self,
-        declaration: &Box<'_, Class>,
-        environment: Rc<RefCell<Environment<'a>>>,
+        _declaration: &Box<'_, Class>,
+        _environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         Ok(Primitive::Null)
     }

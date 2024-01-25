@@ -19,7 +19,7 @@ impl<'a> Runtime<'a> {
                 self.eval_variable_declaration(declaration, environment)
             }
             Declaration::FunctionDeclaration(declaration) => {
-                self.eval_function_declaration(declaration, environment)
+                self.eval_function(declaration, environment)
             }
             Declaration::ClassDeclaration(declaration) => {
                 self.eval_class_declaration(declaration, environment)
