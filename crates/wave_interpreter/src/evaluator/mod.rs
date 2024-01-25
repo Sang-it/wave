@@ -1,4 +1,5 @@
 pub mod assignment;
+pub mod class;
 pub mod declaration;
 pub mod expression;
 pub mod function;

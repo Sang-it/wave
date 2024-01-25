@@ -16,19 +16,20 @@ impl<'a> Runtime<'a> {
     ) -> Result<Primitive<'a>> {
         match declaration {
             Declaration::VariableDeclaration(declaration) => {
-                let result = self.eval_variable_declaration(declaration, environment)?;
-                Ok(result)
+                self.eval_variable_declaration(declaration, environment)
             }
             Declaration::FunctionDeclaration(declaration) => {
                 self.eval_function_declaration(declaration, environment)
             }
-            _ => unimplemented!("declaration"),
+            Declaration::ClassDeclaration(declaration) => {
+                self.eval_class_declaration(declaration, environment)
+            }
         }
     }
 
     pub fn eval_variable_declaration(
         &self,
-        declaration: &Box<'_, VariableDeclaration>,
+        declaration: &Box<'_, VariableDeclaration<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         self.eval_variable_declarator(&declaration.declarations, environment)
@@ -36,7 +37,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_variable_declarator(
         &self,
-        declarators: &Vec<'_, VariableDeclarator>,
+        declarators: &Vec<'_, VariableDeclarator<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         for declarator in declarators {

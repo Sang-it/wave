@@ -16,7 +16,7 @@ use wave_syntax::operator::{BinaryOperator, LogicalOperator, UnaryOperator, Upda
 impl<'a> Runtime<'a> {
     pub fn eval_binary_expression(
         &self,
-        expression: &BinaryExpression<'_>,
+        expression: &BinaryExpression<'a>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let left = &expression.left;
@@ -48,7 +48,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_logical_expression(
         &self,
-        expression: &LogicalExpression<'_>,
+        expression: &LogicalExpression<'a>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let left = &expression.left;
@@ -63,8 +63,8 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_arithmetic(
         &self,
-        left: &Expression<'_>,
-        right: &Expression<'_>,
+        left: &Expression<'a>,
+        right: &Expression<'a>,
         environment: Rc<RefCell<Environment<'a>>>,
         operator: &BinaryOperator,
     ) -> Result<Primitive<'a>> {
@@ -87,8 +87,8 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_ord(
         &self,
-        left: &Expression<'_>,
-        right: &Expression<'_>,
+        left: &Expression<'a>,
+        right: &Expression<'a>,
         environment: Rc<RefCell<Environment<'a>>>,
         operator: &BinaryOperator,
     ) -> Result<Primitive<'a>> {
@@ -122,8 +122,8 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_bitwise(
         &self,
-        left: &Expression<'_>,
-        right: &Expression<'_>,
+        left: &Expression<'a>,
+        right: &Expression<'a>,
         environment: Rc<RefCell<Environment<'a>>>,
         operator: &BinaryOperator,
     ) -> Result<Primitive<'a>> {
@@ -149,8 +149,8 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_logical(
         &self,
-        left: &Expression<'_>,
-        right: &Expression<'_>,
+        left: &Expression<'a>,
+        right: &Expression<'a>,
         environment: Rc<RefCell<Environment<'a>>>,
         operator: &LogicalOperator,
     ) -> Result<Primitive<'a>> {
@@ -168,7 +168,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_unary_expression(
         &self,
-        expression: &Box<'_, UnaryExpression>,
+        expression: &Box<'_, UnaryExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let value = self.eval_expression(&expression.argument, Rc::clone(&environment))?;

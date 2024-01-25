@@ -7,14 +7,15 @@ use crate::Runtime;
 use std::vec::Vec as StdVec;
 use wave_allocator::Box;
 use wave_ast::ast::{
-    ArrayExpression, ArrayExpressionElement, Expression, IdentifierReference, SequenceExpression,
+    ArrayExpression, ArrayExpressionElement, Expression, IdentifierReference,
+    ParenthesizedExpression, SequenceExpression,
 };
 use wave_diagnostics::Result;
 
 impl<'a> Runtime<'a> {
     pub fn eval_expression(
         &self,
-        expression: &Expression<'_>,
+        expression: &Expression<'a>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         match expression {
@@ -47,6 +48,12 @@ impl<'a> Runtime<'a> {
             Expression::UpdateExpression(expression) => {
                 self.eval_update_expression(expression, environment)
             }
+            Expression::ParenthesizedExpression(expression) => {
+                self.eval_parenthesized_expression(expression, environment)
+            }
+            Expression::FunctionExpression(expression) => {
+                self.eval_function_expression(expression, environment)
+            }
             _ => unimplemented!(),
         }
     }
@@ -64,7 +71,7 @@ impl<'a> Runtime<'a> {
 
     fn eval_array_expression(
         &self,
-        expression: &Box<'_, ArrayExpression>,
+        expression: &Box<'_, ArrayExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let mut result = StdVec::new();
@@ -77,7 +84,7 @@ impl<'a> Runtime<'a> {
 
     fn eval_array_expression_element(
         &self,
-        expression: &ArrayExpressionElement<'_>,
+        expression: &ArrayExpressionElement<'a>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         match expression {
@@ -89,7 +96,7 @@ impl<'a> Runtime<'a> {
 
     fn eval_sequence_expression(
         &self,
-        expression: &Box<'_, SequenceExpression<'_>>,
+        expression: &Box<'_, SequenceExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let mut result = Primitive::Null;
@@ -97,5 +104,13 @@ impl<'a> Runtime<'a> {
             result = self.eval_expression(expression, Rc::clone(&environment))?;
         }
         Ok(result)
+    }
+
+    fn eval_parenthesized_expression(
+        &self,
+        expression: &Box<'_, ParenthesizedExpression<'a>>,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        self.eval_expression(&expression.expression, environment)
     }
 }

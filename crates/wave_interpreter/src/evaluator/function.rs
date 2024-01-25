@@ -15,7 +15,7 @@ use wave_span::{Atom, Span};
 #[derive(Clone)]
 pub struct InbuiltFunction {
     pub name: Atom,
-    pub function: fn(&Vec<Primitive<'_>>),
+    pub function: fn(&StdVec<Primitive<'_>>) -> Primitive<'static>,
 }
 
 impl<'a> Runtime<'a> {
@@ -47,7 +47,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_call_expression(
         &self,
-        expression: &Box<'_, CallExpression>,
+        expression: &Box<'_, CallExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         match &expression.callee {
@@ -119,7 +119,7 @@ impl<'a> Runtime<'a> {
         self.inbuilt_functions
             .iter()
             .map(|f| &f.name)
-            .collect::<Vec<_>>()
+            .collect::<StdVec<_>>()
             .contains(&name)
     }
 
@@ -129,5 +129,34 @@ impl<'a> Runtime<'a> {
             .find(|f| f.name == *name)
             .expect("Inbuilt function not found.")
             .clone()
+    }
+
+    pub fn eval_function_expression(
+        &self,
+        expression: &Box<'_, Function<'a>>,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        unsafe {
+            let function = ptr::read(expression).unbox();
+            if let Some(id) = function.id {
+                if let Some(body) = function.body {
+                    let function_name = id.name.to_owned();
+
+                    if self.is_inbuilt_function(&function_name) {
+                        return Err(diagnostics::CannotRedeclareInbuiltFunction(id.span).into());
+                    }
+
+                    let params = function.params.unbox().items;
+                    let body = body.unbox().statements;
+                    let function = Primitive::Function(params, body, Rc::clone(&environment));
+                    environment
+                        .borrow_mut()
+                        .define(function_name, function.clone());
+
+                    return Ok(function);
+                }
+            }
+            Ok(Primitive::Null)
+        }
     }
 }

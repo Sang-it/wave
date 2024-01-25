@@ -36,7 +36,7 @@ impl<'a> Runtime<'a> {
 
     fn eval_expression_statement(
         &self,
-        expression_stmt: &Box<'_, ExpressionStatement>,
+        expression_stmt: &Box<'_, ExpressionStatement<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         self.eval_expression(&expression_stmt.expression, environment)

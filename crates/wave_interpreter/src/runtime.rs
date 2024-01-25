@@ -16,8 +16,9 @@ impl<'a> Runtime<'a> {
     pub fn new(program: Program<'a>) -> Self {
         let mut inbuilt_functions = vec![];
 
-        fn print(arg: &Vec<Primitive>) {
-            println!("{:#?}", arg);
+        fn print(arg: &Vec<Primitive>) -> Primitive<'static> {
+            println!("{:?}", arg);
+            Primitive::Null
         }
 
         inbuilt_functions.push(InbuiltFunction {

@@ -46,7 +46,8 @@ Planned components:
 - [x] Implement while statement
 - [x] Implement unary operators
 - [x] Implement sequence expressions
-- [ ] Implement update operators
+- [x] Implement update operators
+- [ ] Implement class expressions
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments

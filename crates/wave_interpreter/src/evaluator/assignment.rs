@@ -12,7 +12,7 @@ use wave_syntax::operator::AssignmentOperator;
 impl<'a> Runtime<'a> {
     pub fn eval_assignment_expression(
         &self,
-        expression: &Box<'_, AssignmentExpression>,
+        expression: &Box<'_, AssignmentExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let operator = &expression.operator;
@@ -43,7 +43,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_reassignment(
         &self,
-        expression: &Box<'_, AssignmentExpression>,
+        expression: &Box<'_, AssignmentExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let left_identifier = match &expression.left {
@@ -60,7 +60,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_arithmetic_assignment(
         &self,
-        expression: &Box<'_, AssignmentExpression>,
+        expression: &Box<'_, AssignmentExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let left_identifier = match &expression.left {
@@ -119,7 +119,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_bitwise_assignment(
         &self,
-        expression: &Box<'_, AssignmentExpression>,
+        expression: &Box<'_, AssignmentExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let left_identifier = match &expression.left {
@@ -162,7 +162,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval_logical_assignment(
         &self,
-        expression: &Box<'_, AssignmentExpression>,
+        expression: &Box<'_, AssignmentExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         let left_identifier = match &expression.left {
