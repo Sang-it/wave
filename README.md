@@ -47,7 +47,12 @@ Planned components:
 - [x] Implement unary operators
 - [x] Implement sequence expressions
 - [x] Implement update operators
-- [ ] Implement class expressions
+- [x] Implement class expressions
+- [x] Implement static member expression
+- [ ] Implement constructors
+- [ ] Implement this expressions
+- [ ] Implement extend expressions
+- [ ] Implement super calls
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
