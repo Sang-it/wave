@@ -54,6 +54,12 @@ impl<'a> Runtime<'a> {
             Expression::FunctionExpression(expression) => {
                 self.eval_function(expression, environment)
             }
+            Expression::NewExpression(expression) => {
+                self.eval_new_expression(expression, environment)
+            }
+            Expression::MemberExpression(expression) => {
+                self.eval_member_expression(expression, environment)
+            }
             _ => unimplemented!(),
         }
     }

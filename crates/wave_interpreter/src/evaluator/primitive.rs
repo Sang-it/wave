@@ -16,6 +16,7 @@ pub enum Primitive<'a> {
         Option<Vec<'a, Statement<'a>>>,
         Rc<RefCell<Environment<'a>>>,
     ),
+    Class(Rc<RefCell<Environment<'a>>>),
     Return(Box<Primitive<'a>>),
     Break,
     Continue,
@@ -34,6 +35,7 @@ impl<'a> Clone for Primitive<'a> {
                 let body = ptr::read(function_body);
                 Primitive::Function(params, body, Rc::clone(environment))
             },
+            Primitive::Class(environment) => Primitive::Class(Rc::clone(environment)),
             Primitive::Null => Primitive::Null,
             Primitive::Break => Primitive::Break,
             Primitive::Continue => Primitive::Continue,

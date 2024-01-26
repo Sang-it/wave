@@ -99,6 +99,21 @@ impl<'a> Runtime<'a> {
                     self.apply_function(function, arguments, expression.span)
                 }
             }
+            Expression::MemberExpression(_) => {
+                let function = self.eval_expression(&expression.callee, Rc::clone(&environment))?;
+
+                let mut arguments = vec![];
+                for arg in &expression.arguments {
+                    match arg {
+                        Argument::Expression(expression) => {
+                            arguments
+                                .push(self.eval_expression(expression, Rc::clone(&environment))?);
+                        }
+                    }
+                }
+
+                self.apply_function(function, arguments, expression.span)
+            }
             _ => unreachable!(),
         }
     }
@@ -139,7 +154,7 @@ impl<'a> Runtime<'a> {
                     None => Ok(Primitive::Null),
                 }
             }
-            _ => unreachable!(),
+            _ => Err(diagnostics::CannotCallNonFunction(callee_span).into()),
         }
     }
 

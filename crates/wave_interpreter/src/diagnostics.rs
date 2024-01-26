@@ -37,3 +37,15 @@ pub struct InvalidNumberOfArguments(#[label] pub Span);
 #[error("Cannot redeclare inbuilt function.")]
 #[diagnostic(help("Rename the function to something else."))]
 pub struct CannotRedeclareInbuiltFunction(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Cannot instantiate non-class declaration.")]
+pub struct CannotInstantiateNonClass(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Cannot access property.")]
+pub struct CannotAccessProperty(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Cannot call non-function expressions.")]
+pub struct CannotCallNonFunction(#[label] pub Span);

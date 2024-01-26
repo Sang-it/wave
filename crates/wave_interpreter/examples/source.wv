@@ -13,6 +13,12 @@ let a = function (number) {
     return number + 2;
 }
 
-print( fibonacci(8) )
-print( addRecur(8) )
-print( a(3) )
+class Test{
+    a = 1;
+    getA() {
+        print(a);
+    }
+}
+
+let a = new Test();
+a.getA()
