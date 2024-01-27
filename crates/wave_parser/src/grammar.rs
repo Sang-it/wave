@@ -20,6 +20,9 @@ impl<'a> CoverGrammar<'a, Expression<'a>> for SimpleAssignmentTarget<'a> {
             Expression::Identifier(ident) => {
                 Ok(SimpleAssignmentTarget::AssignmentTargetIdentifier(ident))
             }
+            Expression::MemberExpression(expr) => {
+                Ok(SimpleAssignmentTarget::MemberAssignmentTarget(expr))
+            }
             expr => Err(diagnostics::InvalidAssignment(expr.span()).into()),
         }
     }
