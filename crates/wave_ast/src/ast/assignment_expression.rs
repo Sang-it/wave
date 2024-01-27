@@ -6,6 +6,8 @@ use wave_syntax::operator::AssignmentOperator;
 #[cfg(feature = "serde")]
 use serde::Serialize;
 
+use super::MemberExpression;
+
 #[derive(Debug, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize), serde(tag = "type"))]
 pub struct AssignmentExpression<'a> {
@@ -39,4 +41,5 @@ impl<'a> AssignmentTarget<'a> {
 #[cfg_attr(feature = "serde", derive(Serialize), serde(untagged))]
 pub enum SimpleAssignmentTarget<'a> {
     AssignmentTargetIdentifier(Box<'a, IdentifierReference>),
+    MemberAssignmentTarget(Box<'a, MemberExpression<'a>>),
 }
