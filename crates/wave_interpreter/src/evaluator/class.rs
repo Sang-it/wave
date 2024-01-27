@@ -5,11 +5,14 @@ use std::rc::Rc;
 use crate::evaluator::Primitive;
 use crate::Runtime;
 use crate::{diagnostics, environment::Environment};
+use std::vec::Vec as StdVec;
 use wave_allocator::Box;
 use wave_ast::ast::{
-    Class, ClassElement, Expression, MemberExpression, NewExpression, PropertyKey,
+    Argument, Class, ClassElement, Expression, MemberExpression, NewExpression, PropertyKey,
+    ThisExpression,
 };
 use wave_diagnostics::Result;
+use wave_span::Span;
 
 impl<'a> Runtime<'a> {
     pub fn eval_class_declaration(
@@ -55,7 +58,7 @@ impl<'a> Runtime<'a> {
                 );
             }
 
-            Ok(Primitive::Class(env))
+            Ok(Primitive::Null)
         }
     }
 
@@ -70,11 +73,75 @@ impl<'a> Runtime<'a> {
                 let class = environment.borrow().get(class_name, declaration.span)?;
 
                 match class {
-                    Primitive::Class(_) => Ok(class),
+                    Primitive::Class(class_env) => {
+                        let constuctor = class_env
+                            .borrow()
+                            .get("constructor".into(), declaration.span)?;
+
+                        let mut arguments = vec![];
+                        for arg in &declaration.arguments {
+                            match arg {
+                                Argument::Expression(expression) => {
+                                    arguments.push(
+                                        self.eval_expression(expression, Rc::clone(&environment))?,
+                                    );
+                                }
+                            }
+                        }
+
+                        let Primitive::Class(instance_env) =
+                            self.apply_constructor(constuctor, arguments, declaration.span)?
+                        else {
+                            return Err(
+                                diagnostics::CannotInstantiateNonClass(identifier.span).into()
+                            );
+                        };
+
+                        Ok(Primitive::Class(instance_env))
+                    }
                     _ => Err(diagnostics::CannotInstantiateNonClass(identifier.span).into()),
                 }
             }
             _ => Err(diagnostics::CannotInstantiateNonClass(declaration.span).into()),
+        }
+    }
+
+    pub fn apply_constructor(
+        &self,
+        function: Primitive<'a>,
+        arguments: StdVec<Primitive<'a>>,
+        callee_span: Span,
+    ) -> Result<Primitive<'a>> {
+        match function {
+            Primitive::Function(params, body, env) => {
+                match params {
+                    Some(params) => {
+                        if params.len() != arguments.len() {
+                            return Err(diagnostics::InvalidNumberOfArguments(callee_span).into());
+                        }
+
+                        for (param, arg) in params.iter().zip(arguments) {
+                            let param_name = self.get_atom_formal_parameters(param);
+                            env.borrow_mut().define(param_name, arg);
+                        }
+                    }
+                    None => {
+                        if !arguments.is_empty() {
+                            return Err(diagnostics::InvalidNumberOfArguments(callee_span).into());
+                        }
+                    }
+                }
+
+                match body {
+                    Some(body) => {
+                        let eval = self.eval_block(&body, Rc::clone(&env))?;
+                        self.unwrap_return_value(eval)?;
+                        Ok(Primitive::Class(Rc::clone(&env)))
+                    }
+                    None => Ok(Primitive::Null),
+                }
+            }
+            _ => Err(diagnostics::CannotCallNonFunction(callee_span).into()),
         }
     }
 
@@ -115,5 +182,13 @@ impl<'a> Runtime<'a> {
                 }
             }
         }
+    }
+
+    pub fn eval_this_expression(
+        &self,
+        _: &ThisExpression,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        Ok(Primitive::Class(environment))
     }
 }

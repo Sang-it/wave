@@ -1,11 +1,14 @@
 use std::cell::RefCell;
+use std::ptr;
 use std::rc::Rc;
 
 use crate::evaluator::Primitive;
 use crate::Runtime;
 use crate::{diagnostics, environment::Environment};
 use wave_allocator::Box;
-use wave_ast::ast::{AssignmentExpression, AssignmentTarget, SimpleAssignmentTarget};
+use wave_ast::ast::{
+    AssignmentExpression, AssignmentTarget, MemberExpression, SimpleAssignmentTarget,
+};
 use wave_diagnostics::Result;
 use wave_syntax::operator::AssignmentOperator;
 
@@ -46,15 +49,36 @@ impl<'a> Runtime<'a> {
         expression: &Box<'_, AssignmentExpression<'a>>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
-        let left_identifier = match &expression.left {
+        let right_eval = self.eval_expression(&expression.right, Rc::clone(&environment))?;
+
+        match &expression.left {
             AssignmentTarget::SimpleAssignmentTarget(target) => match target {
-                SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => identifier,
+                SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => {
+                    environment
+                        .borrow_mut()
+                        .define(identifier.name.to_owned(), right_eval);
+                }
+                SimpleAssignmentTarget::MemberAssignmentTarget(member_expression) => unsafe {
+                    let member_expression = ptr::read(member_expression).unbox();
+                    match member_expression {
+                        MemberExpression::StaticMemberExpression(static_member) => {
+                            let class_env = self
+                                .eval_expression(&static_member.object, Rc::clone(&environment))?;
+
+                            let property_name = static_member.property.name;
+
+                            match class_env {
+                                Primitive::Class(class_env) => {
+                                    class_env.borrow_mut().define(property_name, right_eval);
+                                }
+                                _ => todo!(),
+                            }
+                        }
+                        _ => todo!(),
+                    }
+                },
             },
         };
-        let right_eval = self.eval_expression(&expression.right, Rc::clone(&environment))?;
-        environment
-            .borrow_mut()
-            .define(left_identifier.name.to_owned(), right_eval);
         Ok(Primitive::Null)
     }
 
@@ -66,6 +90,7 @@ impl<'a> Runtime<'a> {
         let left_identifier = match &expression.left {
             AssignmentTarget::SimpleAssignmentTarget(target) => match target {
                 SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => identifier,
+                _ => unreachable!(),
             },
         };
         let left_current = environment
@@ -125,6 +150,7 @@ impl<'a> Runtime<'a> {
         let left_identifier = match &expression.left {
             AssignmentTarget::SimpleAssignmentTarget(target) => match target {
                 SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => identifier,
+                _ => unreachable!(),
             },
         };
         let left_current = environment
@@ -168,11 +194,14 @@ impl<'a> Runtime<'a> {
         let left_identifier = match &expression.left {
             AssignmentTarget::SimpleAssignmentTarget(target) => match target {
                 SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => identifier,
+                _ => unreachable!(),
             },
         };
+
         let left_current = environment
             .borrow()
             .get(left_identifier.name.to_owned(), left_identifier.span)?;
+
         let right_eval = self.eval_expression(&expression.right, Rc::clone(&environment))?;
         match (left_current, right_eval) {
             (Primitive::Boolean(l), Primitive::Boolean(r)) => match &expression.operator {

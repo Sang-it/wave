@@ -118,7 +118,7 @@ impl<'a> Runtime<'a> {
         }
     }
 
-    fn apply_function(
+    pub fn apply_function(
         &self,
         function: Primitive<'a>,
         arguments: StdVec<Primitive<'a>>,
@@ -158,13 +158,13 @@ impl<'a> Runtime<'a> {
         }
     }
 
-    fn get_atom_formal_parameters(&self, param: &FormalParameter) -> Atom {
+    pub fn get_atom_formal_parameters(&self, param: &FormalParameter) -> Atom {
         match &param.pattern.kind {
             BindingPatternKind::BindingIdentifier(identifier) => identifier.name.to_owned(),
         }
     }
 
-    fn unwrap_return_value(&self, primitive: Primitive<'a>) -> Result<Primitive<'a>> {
+    pub fn unwrap_return_value(&self, primitive: Primitive<'a>) -> Result<Primitive<'a>> {
         match primitive {
             Primitive::Return(value) => Ok(*value),
             _ => Ok(primitive),

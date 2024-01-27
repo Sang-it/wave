@@ -14,11 +14,16 @@ let a = function (number) {
 }
 
 class Test{
-    a = 1;
+    a;
+
+    constructor(a) {
+        this.a = a;
+    }
+
     getA() {
-        print(a);
+        print(this.a)
     }
 }
 
-let a = new Test();
+let a = new Test(20);
 a.getA()

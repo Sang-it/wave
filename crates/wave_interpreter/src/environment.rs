@@ -25,6 +25,19 @@ impl<'a> Environment<'a> {
         }
     }
 
+    pub fn mutate(&mut self, name: Atom, value: Primitive<'a>) -> Result<()> {
+        match self.values.get_mut(&name) {
+            Some(v) => {
+                *v = value;
+                Ok(())
+            }
+            None => match &self.outer {
+                Some(outer) => outer.as_ref().borrow_mut().mutate(name, value),
+                None => Err(diagnostics::VariableNotFound(Span::default()).into()),
+            },
+        }
+    }
+
     pub fn define(&mut self, name: Atom, value: Primitive<'a>) {
         self.values.insert(name, value);
     }

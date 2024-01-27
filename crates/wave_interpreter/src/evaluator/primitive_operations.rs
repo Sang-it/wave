@@ -193,7 +193,10 @@ impl<'a> Runtime<'a> {
         expression: &Box<'_, UpdateExpression>,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
-        let SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) = &expression.argument;
+        let SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) = &expression.argument
+        else {
+            todo!()
+        };
 
         match expression.operator {
             UpdateOperator::Increment => {
