@@ -49,8 +49,8 @@ Planned components:
 - [x] Implement update operators
 - [x] Implement class expressions
 - [x] Implement static member expression
-- [ ] Implement constructors
-- [ ] Implement this expressions
+- [x] Implement constructors
+- [x] Implement this expressions
 - [ ] Implement extend expressions
 - [ ] Implement super calls
 
