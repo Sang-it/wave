@@ -9,9 +9,11 @@ function fibonacci(number){
     return fibonacci(number - 1) + fibonacci(number - 2);
 }
 
-let a = function (number) {
+let a = (function (number) {
     return number + 2;
-}
+})(2)
+
+print(a)
 
 class Test{
     a;

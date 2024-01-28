@@ -114,6 +114,21 @@ impl<'a> Runtime<'a> {
 
                 self.apply_function(function, arguments, expression.span)
             }
+            Expression::FunctionExpression(function) => {
+                let function = self.eval_function(function, Rc::clone(&environment))?;
+
+                let mut arguments = vec![];
+                for arg in &expression.arguments {
+                    match arg {
+                        Argument::Expression(expression) => {
+                            arguments
+                                .push(self.eval_expression(expression, Rc::clone(&environment))?);
+                        }
+                    }
+                }
+
+                self.apply_function(function, arguments, expression.span)
+            }
             _ => unreachable!(),
         }
     }
