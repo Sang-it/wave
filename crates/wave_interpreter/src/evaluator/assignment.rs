@@ -62,14 +62,14 @@ impl<'a> Runtime<'a> {
                     let member_expression = ptr::read(member_expression).unbox();
                     match member_expression {
                         MemberExpression::StaticMemberExpression(static_member) => {
-                            let class_env = self
+                            let env = self
                                 .eval_expression(&static_member.object, Rc::clone(&environment))?;
 
-                            let property_name = static_member.property.name;
+                            let property_name = self.bind_this(static_member.property.name);
 
-                            match class_env {
-                                Primitive::Instance(class_env) => {
-                                    class_env.borrow_mut().define(property_name, right_eval);
+                            match env {
+                                Primitive::This(this_env) => {
+                                    this_env.borrow_mut().define(property_name, right_eval);
                                 }
                                 _ => todo!(),
                             }

@@ -13,6 +13,7 @@ let a = (function (number) {
     return number + 2;
 })(2)
 
+
 class Foo {
     constructor(x , y , z) {
         this.x = x;
@@ -20,12 +21,16 @@ class Foo {
         this.z = z;
     }
 
-    getA() {
-        print(this.x)
+    addThis(x,y) {
+        print(this.x + this.y);
+    }
+
+
+    add(x,y) {
+        print(x + y);
     }
 }
 
 let a = new Foo(1,2,3);
-let b = new Foo(10,2,3);
-a.getA()
-b.getA()
+a.add(10,10)
+a.addThis(10,10)

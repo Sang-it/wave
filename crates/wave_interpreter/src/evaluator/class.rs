@@ -12,7 +12,9 @@ use wave_ast::ast::{
     ThisExpression,
 };
 use wave_diagnostics::Result;
-use wave_span::Span;
+use wave_span::{Atom, Span};
+
+const CONSTRUCTOR: &str = "this_constructor";
 
 impl<'a> Runtime<'a> {
     pub fn eval_class_declaration(
@@ -34,6 +36,7 @@ impl<'a> Runtime<'a> {
                                 PropertyKey::Identifier(identifier) => identifier.name.to_owned(),
                                 _ => unreachable!(),
                             };
+                            let property_name = self.bind_this(property_name);
                             let expr_value = if let Some(expr) = &definition.value {
                                 self.eval_expression(expr, Rc::clone(&env))?
                             } else {
@@ -46,6 +49,7 @@ impl<'a> Runtime<'a> {
                                 PropertyKey::Identifier(identifier) => identifier.name.to_owned(),
                                 _ => unreachable!(),
                             };
+                            let method_name = self.bind_this(method_name);
                             let function =
                                 self.eval_function(&definition.value, Rc::clone(&env))?;
                             env.borrow_mut().define(method_name, function);
@@ -78,7 +82,7 @@ impl<'a> Runtime<'a> {
 
                         let constuctor = class_env
                             .borrow()
-                            .get("constructor".into(), declaration.span)?;
+                            .get(CONSTRUCTOR.into(), declaration.span)?;
 
                         let mut arguments = vec![];
                         for arg in &declaration.arguments {
@@ -168,6 +172,7 @@ impl<'a> Runtime<'a> {
                     match primitive {
                         Primitive::Instance(env) => {
                             let property_name = expression.property.name;
+                            let property_name = self.bind_this(property_name);
 
                             let property = env.borrow().get(property_name, expression.span)?;
 
@@ -177,7 +182,22 @@ impl<'a> Runtime<'a> {
                                 | Primitive::Boolean(_)
                                 | Primitive::Array(_)
                                 | Primitive::Null => Ok(property),
-
+                                Primitive::Function(params, body, _) => {
+                                    Ok(Primitive::Function(params, body, Rc::clone(&env)))
+                                }
+                                _ => Err(diagnostics::CannotAccessProperty(expression.span).into()),
+                            }
+                        }
+                        Primitive::This(env) => {
+                            let property_name = expression.property.name;
+                            let property_name = self.bind_this(property_name);
+                            let property = env.borrow().get(property_name, expression.span)?;
+                            match property {
+                                Primitive::Number(_)
+                                | Primitive::String(_)
+                                | Primitive::Boolean(_)
+                                | Primitive::Array(_)
+                                | Primitive::Null => Ok(property),
                                 Primitive::Function(params, body, _) => {
                                     Ok(Primitive::Function(params, body, Rc::clone(&env)))
                                 }
@@ -199,6 +219,10 @@ impl<'a> Runtime<'a> {
         _: &ThisExpression,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
-        Ok(Primitive::Instance(environment))
+        Ok(Primitive::This(environment))
+    }
+
+    pub fn bind_this(&self, atom: Atom) -> Atom {
+        ("this_".to_string() + atom.as_ref()).into()
     }
 }
