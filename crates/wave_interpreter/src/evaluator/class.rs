@@ -26,36 +26,36 @@ impl<'a> Runtime<'a> {
 
             let env = Rc::new(RefCell::new(Environment::extend(Rc::clone(&environment))));
 
-            for element in class_elements {
-                match element {
-                    ClassElement::PropertyDefinition(definition) => {
-                        let property_name = match &definition.key {
-                            PropertyKey::Identifier(identifier) => identifier.name.to_owned(),
-                            _ => unreachable!(),
-                        };
-                        let expr_value = if let Some(expr) = &definition.value {
-                            self.eval_expression(expr, Rc::clone(&env))?
-                        } else {
-                            Primitive::Null
-                        };
-                        env.borrow_mut().define(property_name, expr_value);
-                    }
-                    ClassElement::MethodDefinition(definition) => {
-                        let method_name = match &definition.key {
-                            PropertyKey::Identifier(identifier) => identifier.name.to_owned(),
-                            _ => unreachable!(),
-                        };
-                        let function = self.eval_function(&definition.value, Rc::clone(&env))?;
-                        env.borrow_mut().define(method_name, function);
+            if let Some(identifier) = &class.id {
+                for element in class_elements {
+                    match element {
+                        ClassElement::PropertyDefinition(definition) => {
+                            let property_name = match &definition.key {
+                                PropertyKey::Identifier(identifier) => identifier.name.to_owned(),
+                                _ => unreachable!(),
+                            };
+                            let expr_value = if let Some(expr) = &definition.value {
+                                self.eval_expression(expr, Rc::clone(&env))?
+                            } else {
+                                Primitive::Null
+                            };
+                            env.borrow_mut().define(property_name, expr_value);
+                        }
+                        ClassElement::MethodDefinition(definition) => {
+                            let method_name = match &definition.key {
+                                PropertyKey::Identifier(identifier) => identifier.name.to_owned(),
+                                _ => unreachable!(),
+                            };
+                            let function =
+                                self.eval_function(&definition.value, Rc::clone(&env))?;
+                            env.borrow_mut().define(method_name, function);
+                        }
                     }
                 }
-            }
 
-            if let Some(identifier) = &class.id {
-                environment.borrow_mut().define(
-                    identifier.name.to_owned(),
-                    Primitive::Class(Rc::clone(&env)),
-                );
+                environment
+                    .borrow_mut()
+                    .define(identifier.name.to_owned(), Primitive::Class(env));
             }
 
             Ok(Primitive::Null)
@@ -74,6 +74,8 @@ impl<'a> Runtime<'a> {
 
                 match class {
                     Primitive::Class(class_env) => {
+                        let class_env = Rc::new(RefCell::new(Environment::extend(class_env)));
+
                         let constuctor = class_env
                             .borrow()
                             .get("constructor".into(), declaration.span)?;
@@ -83,21 +85,25 @@ impl<'a> Runtime<'a> {
                             match arg {
                                 Argument::Expression(expression) => {
                                     arguments.push(
-                                        self.eval_expression(expression, Rc::clone(&environment))?,
+                                        self.eval_expression(expression, Rc::clone(&class_env))?,
                                     );
                                 }
                             }
                         }
 
-                        let Primitive::Class(instance_env) =
-                            self.apply_constructor(constuctor, arguments, declaration.span)?
+                        let Primitive::Class(instance_env) = self.apply_constructor(
+                            constuctor,
+                            arguments,
+                            declaration.span,
+                            class_env,
+                        )?
                         else {
                             return Err(
                                 diagnostics::CannotInstantiateNonClass(identifier.span).into()
                             );
                         };
 
-                        Ok(Primitive::Class(instance_env))
+                        Ok(Primitive::Instance(instance_env))
                     }
                     _ => Err(diagnostics::CannotInstantiateNonClass(identifier.span).into()),
                 }
@@ -111,9 +117,10 @@ impl<'a> Runtime<'a> {
         function: Primitive<'a>,
         arguments: StdVec<Primitive<'a>>,
         callee_span: Span,
+        env: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
         match function {
-            Primitive::Function(params, body, env) => {
+            Primitive::Function(params, body, _) => {
                 match params {
                     Some(params) => {
                         if params.len() != arguments.len() {
@@ -136,7 +143,7 @@ impl<'a> Runtime<'a> {
                     Some(body) => {
                         let eval = self.eval_block(&body, Rc::clone(&env))?;
                         self.unwrap_return_value(eval)?;
-                        Ok(Primitive::Class(Rc::clone(&env)))
+                        Ok(Primitive::Class(env))
                     }
                     None => Ok(Primitive::Null),
                 }
@@ -159,18 +166,21 @@ impl<'a> Runtime<'a> {
                         self.eval_expression(&expression.object, Rc::clone(&environment))?;
 
                     match primitive {
-                        Primitive::Class(env) => {
+                        Primitive::Instance(env) => {
                             let property_name = expression.property.name;
 
                             let property = env.borrow().get(property_name, expression.span)?;
 
                             match property {
-                                Primitive::Function(_, _, _)
-                                | Primitive::Number(_)
+                                Primitive::Number(_)
                                 | Primitive::String(_)
                                 | Primitive::Boolean(_)
                                 | Primitive::Array(_)
                                 | Primitive::Null => Ok(property),
+
+                                Primitive::Function(params, body, _) => {
+                                    Ok(Primitive::Function(params, body, Rc::clone(&env)))
+                                }
                                 _ => Err(diagnostics::CannotAccessProperty(expression.span).into()),
                             }
                         }
@@ -189,6 +199,6 @@ impl<'a> Runtime<'a> {
         _: &ThisExpression,
         environment: Rc<RefCell<Environment<'a>>>,
     ) -> Result<Primitive<'a>> {
-        Ok(Primitive::Class(environment))
+        Ok(Primitive::Instance(environment))
     }
 }

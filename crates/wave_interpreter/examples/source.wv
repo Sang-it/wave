@@ -13,19 +13,19 @@ let a = (function (number) {
     return number + 2;
 })(2)
 
-print(a)
-
-class Test{
-    a;
-
-    constructor(a) {
-        this.a = a;
+class Foo {
+    constructor(x , y , z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
     getA() {
-        print(this.a)
+        print(this.x)
     }
 }
 
-let a = new Test(20);
+let a = new Foo(1,2,3);
+let b = new Foo(10,2,3);
 a.getA()
+b.getA()

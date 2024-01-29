@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::vec::Vec as StdVec;
 use std::{cell::RefCell, ptr, rc::Rc};
 use wave_allocator::Vec;
@@ -5,7 +6,6 @@ use wave_ast::ast::{FormalParameter, Statement};
 
 use crate::environment::Environment;
 
-#[derive(Debug)]
 pub enum Primitive<'a> {
     Number(f64),
     Boolean(bool),
@@ -17,10 +17,29 @@ pub enum Primitive<'a> {
         Rc<RefCell<Environment<'a>>>,
     ),
     Class(Rc<RefCell<Environment<'a>>>),
+    Instance(Rc<RefCell<Environment<'a>>>),
     Return(Box<Primitive<'a>>),
     Break,
     Continue,
     Null,
+}
+
+impl<'a> Debug for Primitive<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Primitive::Number(value) => write!(f, "{}", value),
+            Primitive::Boolean(value) => write!(f, "{}", value),
+            Primitive::String(value) => write!(f, "{}", value),
+            Primitive::Array(value) => write!(f, "{:?}", value),
+            Primitive::Function(_, _, _) => write!(f, "Function"),
+            Primitive::Class(env) => write!(f, "{:?}", env.borrow().values),
+            Primitive::Instance(env) => write!(f, "{:?}", env.borrow().values),
+            Primitive::Return(value) => write!(f, "Return({:?})", value),
+            Primitive::Break => write!(f, "Break"),
+            Primitive::Continue => write!(f, "Continue"),
+            Primitive::Null => write!(f, "Null"),
+        }
+    }
 }
 
 impl<'a> Clone for Primitive<'a> {
@@ -36,6 +55,7 @@ impl<'a> Clone for Primitive<'a> {
                 Primitive::Function(params, body, Rc::clone(environment))
             },
             Primitive::Class(environment) => Primitive::Class(Rc::clone(environment)),
+            Primitive::Instance(environment) => Primitive::Instance(Rc::clone(environment)),
             Primitive::Null => Primitive::Null,
             Primitive::Break => Primitive::Break,
             Primitive::Continue => Primitive::Continue,

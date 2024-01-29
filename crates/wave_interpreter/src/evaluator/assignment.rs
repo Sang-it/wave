@@ -68,7 +68,7 @@ impl<'a> Runtime<'a> {
                             let property_name = static_member.property.name;
 
                             match class_env {
-                                Primitive::Class(class_env) => {
+                                Primitive::Instance(class_env) => {
                                     class_env.borrow_mut().define(property_name, right_eval);
                                 }
                                 _ => todo!(),
