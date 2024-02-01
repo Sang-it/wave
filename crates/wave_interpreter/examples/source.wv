@@ -13,24 +13,24 @@ let a = (function (number) {
     return number + 2;
 })(2)
 
-
-class Foo {
-    constructor(x , y , z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+class Polygon{
+    constructor(width, length) {
+        this.width = width;
+        this.length = length;
     }
 
-    addThis(x,y) {
-        print(this.x + this.y);
-    }
-
-
-    add(x,y) {
-        print(x + y);
+    getVolume() {
+        return this.width * this.length * this.height;
     }
 }
 
-let a = new Foo(1,2,3);
-a.add(10,10)
-a.addThis(10,10)
+class Square extends Polygon  {
+    constructor(length, height) {
+        super(length, length);
+        this.height = height;
+    }
+}
+
+let a = new Square(10, 11);
+
+print(a.getVolume())

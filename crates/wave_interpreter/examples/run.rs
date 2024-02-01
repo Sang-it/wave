@@ -6,7 +6,7 @@ use wave_parser::Parser;
 fn main() {
     let path = env::current_dir()
         .expect("failed to get current directory")
-        .join("wave_interpreter/examples/source.wv");
+        .join("crates/wave_interpreter/examples/source.wv");
 
     let source_text = std::fs::read_to_string(path).expect("failed to read source file");
     let allocator = Allocator::default();

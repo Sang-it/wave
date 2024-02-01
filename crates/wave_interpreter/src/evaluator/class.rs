@@ -8,7 +8,7 @@ use crate::{diagnostics, environment::Environment};
 use std::vec::Vec as StdVec;
 use wave_allocator::Box;
 use wave_ast::ast::{
-    Argument, Class, ClassElement, Expression, MemberExpression, NewExpression, PropertyKey,
+    Argument, Class, ClassElement, Expression, MemberExpression, NewExpression, PropertyKey, Super,
     ThisExpression,
 };
 use wave_diagnostics::Result;
@@ -56,6 +56,11 @@ impl<'a> Runtime<'a> {
                         }
                     }
                 }
+
+                if let Some(Expression::Identifier(ident)) = &declaration.super_class {
+                    env.borrow_mut()
+                        .define("super".into(), Primitive::String(ident.name.to_string()));
+                };
 
                 environment
                     .borrow_mut()
@@ -174,7 +179,35 @@ impl<'a> Runtime<'a> {
                             let property_name = expression.property.name;
                             let property_name = self.bind_this(property_name);
 
-                            let property = env.borrow().get(property_name, expression.span)?;
+                            let property = env.borrow().get(property_name.clone(), expression.span);
+
+                            let property = match property {
+                                Ok(property) => property,
+                                Err(_) => {
+                                    let parent =
+                                        self.get_parent_class(expression.span, Rc::clone(&env))?;
+
+                                    match parent {
+                                        Primitive::Class(parent_class) => {
+                                            let property = parent_class
+                                                .borrow()
+                                                .get(property_name, expression.span)?;
+
+                                            match property {
+                                                Primitive::Function(params, body, _) => {
+                                                    Primitive::Function(
+                                                        params,
+                                                        body,
+                                                        Rc::clone(&env),
+                                                    )
+                                                }
+                                                _ => property,
+                                            }
+                                        }
+                                        _ => unreachable!(),
+                                    }
+                                }
+                            };
 
                             match property {
                                 Primitive::Number(_)
@@ -212,6 +245,38 @@ impl<'a> Runtime<'a> {
                 }
             }
         }
+    }
+
+    pub fn get_parent_class(
+        &self,
+        span: Span,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        let parent_class = environment.borrow().get("super".into(), span)?;
+
+        let Primitive::String(parent_class_name) = parent_class else {
+            unreachable!()
+        };
+
+        environment.borrow().get(parent_class_name.into(), span)
+    }
+
+    pub fn eval_super_expression(
+        &self,
+        super_call: &Box<'_, Super>,
+        environment: Rc<RefCell<Environment<'a>>>,
+    ) -> Result<Primitive<'a>> {
+        let Primitive::Class(parent_class) =
+            self.get_parent_class(super_call.span, Rc::clone(&environment))?
+        else {
+            unreachable!()
+        };
+
+        let super_call = parent_class
+            .borrow()
+            .get(CONSTRUCTOR.into(), super_call.span)?;
+
+        Ok(super_call)
     }
 
     pub fn eval_this_expression(

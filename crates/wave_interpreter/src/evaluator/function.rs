@@ -129,6 +129,27 @@ impl<'a> Runtime<'a> {
 
                 self.apply_function(function, arguments, expression.span)
             }
+            Expression::Super(super_expression) => {
+                let function =
+                    self.eval_super_expression(super_expression, Rc::clone(&environment))?;
+
+                let mut arguments = vec![];
+                for arg in &expression.arguments {
+                    match arg {
+                        Argument::Expression(expression) => {
+                            arguments
+                                .push(self.eval_expression(expression, Rc::clone(&environment))?);
+                        }
+                    }
+                }
+
+                self.apply_constructor(
+                    function,
+                    arguments,
+                    expression.span,
+                    Rc::clone(&environment),
+                )
+            }
             _ => unreachable!(),
         }
     }

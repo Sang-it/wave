@@ -63,7 +63,7 @@ impl<'a> Runtime<'a> {
             Expression::MemberExpression(expression) => {
                 self.eval_member_expression(expression, environment)
             }
-            _ => unimplemented!(),
+            Expression::Super(expression) => self.eval_super_expression(expression, environment),
         }
     }
 
