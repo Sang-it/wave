@@ -10,7 +10,7 @@ function fibonacci(number){
     if (number == 2) return 1;
     return fibonacci(number - 1) + fibonacci(number - 2);
 }
-//Classes
+// Classes
 class Rectangle{
     constructor(length) {
         this.length = length;
@@ -19,6 +19,7 @@ class Rectangle{
         return this.length ** 2;
     }
 }
+// Inheritance
 class Cube extends Rectangle{
     constructor(length, height) {
         super(length, length);
