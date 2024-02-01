@@ -51,8 +51,9 @@ Planned components:
 - [x] Implement static member expression
 - [x] Implement constructors
 - [x] Implement this expressions
-- [ ] Implement extend expressions
-- [ ] Implement super calls
+- [x] Implement extend expressions
+- [x] Implement super calls
+- [ ] Implement modules
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
