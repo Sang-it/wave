@@ -175,12 +175,10 @@ impl<'a> Runtime<'a> {
                         self.eval_expression(&expression.object, Rc::clone(&environment))?;
 
                     match primitive {
-                        Primitive::Instance(env) => {
+                        Primitive::Instance(env) | Primitive::This(env) => {
                             let property_name = expression.property.name;
                             let property_name = self.bind_this(property_name);
-
                             let property = env.borrow().get(property_name.clone(), expression.span);
-
                             let property = match property {
                                 Ok(property) => property,
                                 Err(_) => {
@@ -188,43 +186,14 @@ impl<'a> Runtime<'a> {
                                         self.get_parent_class(expression.span, Rc::clone(&env))?;
 
                                     match parent {
-                                        Primitive::Class(parent_class) => {
-                                            let property = parent_class
-                                                .borrow()
-                                                .get(property_name, expression.span)?;
-
-                                            match property {
-                                                Primitive::Function(params, body, _) => {
-                                                    Primitive::Function(
-                                                        params,
-                                                        body,
-                                                        Rc::clone(&env),
-                                                    )
-                                                }
-                                                _ => property,
-                                            }
-                                        }
+                                        Primitive::Class(parent_class) => parent_class
+                                            .borrow()
+                                            .get(property_name, expression.span)?,
                                         _ => unreachable!(),
                                     }
                                 }
                             };
 
-                            match property {
-                                Primitive::Number(_)
-                                | Primitive::String(_)
-                                | Primitive::Boolean(_)
-                                | Primitive::Array(_)
-                                | Primitive::Null => Ok(property),
-                                Primitive::Function(params, body, _) => {
-                                    Ok(Primitive::Function(params, body, Rc::clone(&env)))
-                                }
-                                _ => Err(diagnostics::CannotAccessProperty(expression.span).into()),
-                            }
-                        }
-                        Primitive::This(env) => {
-                            let property_name = expression.property.name;
-                            let property_name = self.bind_this(property_name);
-                            let property = env.borrow().get(property_name, expression.span)?;
                             match property {
                                 Primitive::Number(_)
                                 | Primitive::String(_)

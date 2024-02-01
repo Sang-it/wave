@@ -2,6 +2,38 @@
 An over-engineered multi paradigm (toy) language that comes with its whole ecosystem.
 The language will have many implementations; I just want to learn how everything works.
 
+## Current Spec (Summarized).
+```js
+// Functions
+function fibonacci(number){
+    if (number == 1) return 0;
+    if (number == 2) return 1;
+    return fibonacci(number - 1) + fibonacci(number - 2);
+}
+//Classes
+class Rectangle{
+    constructor(length) {
+        this.length = length;
+    }
+    getArea() {
+        return this.length ** 2;
+    }
+}
+class Cube extends Rectangle{
+    constructor(length, height) {
+        super(length, length);
+        this.height = height;
+    }
+    getVolume() {
+        return this.getArea() * this.height;
+    }
+}
+// Variable Declarations
+let cube = new Cube(fibonacci(10),fibonnacci(11))
+// StdOut
+print(cube.getVolume)
+```
+
 Planned Language Implementations:
 - Interpreter
 - ByteCode-Interpreter(VM)

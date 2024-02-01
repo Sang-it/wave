@@ -13,24 +13,24 @@ let a = (function (number) {
     return number + 2;
 })(2)
 
-class Polygon{
-    constructor(width, length) {
-        this.width = width;
+class Rectangle{
+    constructor(length) {
         this.length = length;
     }
-
-    getVolume() {
-        return this.width * this.length * this.height;
+    getArea() {
+        return this.length ** 2;
     }
 }
 
-class Square extends Polygon  {
+class Cube extends Rectangle{
     constructor(length, height) {
-        super(length, length);
+        super(length);
         this.height = height;
     }
+    getVolume() {
+        return this.getArea() * this.height;
+    }
 }
 
-let a = new Square(10, 11);
-
-print(a.getVolume())
+let cube = new Cube(fibonacci(10),fibonacci(11))
+print(cube.getVolume())
