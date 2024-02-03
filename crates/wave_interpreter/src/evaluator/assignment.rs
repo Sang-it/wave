@@ -7,7 +7,7 @@ use crate::Runtime;
 use crate::{diagnostics, environment::Environment};
 use wave_allocator::Box;
 use wave_ast::ast::{
-    AssignmentExpression, AssignmentTarget, MemberExpression, SimpleAssignmentTarget,
+    AssignmentExpression, AssignmentTarget, Expression, MemberExpression, SimpleAssignmentTarget,
 };
 use wave_diagnostics::Result;
 use wave_syntax::operator::AssignmentOperator;
@@ -74,7 +74,35 @@ impl<'a> Runtime<'a> {
                                 _ => todo!(),
                             }
                         }
-                        _ => todo!(),
+                        // TODO : Refactor this so that you do not have to clone the array on every assignment
+                        MemberExpression::ComputedMemberExpression(static_member) => {
+                            let identifier = match &static_member.object {
+                                Expression::Identifier(identifier) => identifier.name.to_owned(),
+                                _ => unreachable!(),
+                            };
+
+                            let array = self
+                                .eval_expression(&static_member.object, Rc::clone(&environment))?;
+
+                            let index = self.eval_expression(
+                                &static_member.expression,
+                                Rc::clone(&environment),
+                            )?;
+
+                            match array {
+                                Primitive::Array(mut array) => {
+                                    let index = match index {
+                                        Primitive::Number(index) => index as usize,
+                                        _ => todo!(),
+                                    };
+                                    array[index] = right_eval;
+                                    environment
+                                        .borrow_mut()
+                                        .define(identifier, Primitive::Array(array));
+                                }
+                                _ => todo!(),
+                            }
+                        }
                     }
                 },
             },
@@ -90,9 +118,10 @@ impl<'a> Runtime<'a> {
         let left_identifier = match &expression.left {
             AssignmentTarget::SimpleAssignmentTarget(target) => match target {
                 SimpleAssignmentTarget::AssignmentTargetIdentifier(identifier) => identifier,
-                _ => unreachable!(),
+                _ => todo!(),
             },
         };
+
         let left_current = environment
             .borrow()
             .get(left_identifier.name.to_owned(), left_identifier.span)?;

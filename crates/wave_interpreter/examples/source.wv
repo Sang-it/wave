@@ -32,5 +32,6 @@ class Cube extends Rectangle{
     }
 }
 
-let cube = new Cube(fibonacci(10),fibonacci(11))
-print(cube.getVolume())
+let a = [1,2,3]
+a[0] = a[0] + 10;
+print(a[0])

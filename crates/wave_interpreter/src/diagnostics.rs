@@ -49,3 +49,11 @@ pub struct CannotAccessProperty(#[label] pub Span);
 #[derive(Debug, Error, Diagnostic)]
 #[error("Cannot call non-function expressions.")]
 pub struct CannotCallNonFunction(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Cannot access non-integer index.")]
+pub struct InvalidArrayAccess(#[label] pub Span);
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Index out of bounds.")]
+pub struct IndexOutOfBounds(#[label] pub Span);
