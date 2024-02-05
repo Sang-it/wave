@@ -53,6 +53,14 @@ impl<'a> Runtime<'a> {
                                 _ => Err(diagnostics::CannotAccessProperty(expression.span).into()),
                             }
                         }
+                        Primitive::Array(array) => {
+                            let property_name = expression.property.name;
+
+                            match property_name.as_str() {
+                                "length" => Ok(Primitive::Number(array.len() as f64)),
+                                _ => Err(diagnostics::CannotAccessProperty(expression.span).into()),
+                            }
+                        }
                         _ => todo!(),
                     }
                 }

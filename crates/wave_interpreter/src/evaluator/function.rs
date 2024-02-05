@@ -15,7 +15,7 @@ use wave_span::{Atom, Span};
 #[derive(Clone)]
 pub struct InbuiltFunction {
     pub name: Atom,
-    pub function: fn(&StdVec<Primitive<'_>>) -> Primitive<'static>,
+    pub function: fn(&[Primitive<'_>]) -> Result<Primitive<'static>>,
 }
 
 impl<'a> Runtime<'a> {
@@ -92,8 +92,11 @@ impl<'a> Runtime<'a> {
                 if self.is_inbuilt_function(&function_name) {
                     let in_built = self.get_in_built_function(&function_name);
                     let function = in_built.function;
-                    function(&arguments);
-                    Ok(Primitive::Null)
+                    unsafe {
+                        Ok(std::mem::transmute::<Primitive<'_>, Primitive<'_>>(
+                            function(&arguments)?,
+                        ))
+                    }
                 } else {
                     let function = environment.borrow().get(function_name, identifier.span)?;
                     self.apply_function(function, arguments, expression.span)

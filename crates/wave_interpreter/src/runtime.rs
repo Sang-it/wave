@@ -1,6 +1,7 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
+    diagnostics,
     environment::Environment,
     evaluator::{function::InbuiltFunction, Primitive},
 };
@@ -16,14 +17,48 @@ impl<'a> Runtime<'a> {
     pub fn new(program: Program<'a>) -> Self {
         let mut inbuilt_functions = vec![];
 
-        fn print(arg: &Vec<Primitive>) -> Primitive<'static> {
+        fn print(arg: &[Primitive]) -> Result<Primitive<'static>> {
             println!("{:?}", arg);
-            Primitive::Null
+            Ok(Primitive::Null)
+        }
+
+        fn append(arg: &[Primitive]) -> Result<Primitive<'static>> {
+            let Primitive::Array(array) = &arg[0] else {
+                return Err(diagnostics::NotAnArray().into());
+            };
+
+            let mut array = array.clone();
+
+            for primitive in arg.iter().skip(1) {
+                array.push(primitive.clone());
+            }
+            unsafe {
+                return Ok(Primitive::Array(std::mem::transmute::<
+                    Vec<Primitive>,
+                    Vec<Primitive<'static>>,
+                >(array)));
+            };
+        }
+
+        fn contains(arg: &[Primitive]) -> Result<Primitive<'static>> {
+            let Primitive::Array(array) = &arg[0] else {
+                return Err(diagnostics::NotAnArray().into());
+            };
+            let value = &arg[1];
+            Ok(Primitive::Boolean(array.contains(value)))
         }
 
         inbuilt_functions.push(InbuiltFunction {
             name: "print".into(),
             function: print,
+        });
+        inbuilt_functions.push(InbuiltFunction {
+            name: "append".into(),
+            function: append,
+        });
+        inbuilt_functions.push(InbuiltFunction {
+            name: "contains".into(),
+            function: contains,
         });
 
         Self {

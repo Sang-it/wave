@@ -25,6 +25,19 @@ pub enum Primitive<'a> {
     Null,
 }
 
+impl<'a> PartialEq for Primitive<'a> {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Primitive::Number(a), Primitive::Number(b)) => a == b,
+            (Primitive::Boolean(a), Primitive::Boolean(b)) => a == b,
+            (Primitive::String(a), Primitive::String(b)) => a == b,
+            (Primitive::Array(a), Primitive::Array(b)) => a == b,
+            (Primitive::Return(a), Primitive::Return(b)) => a == b,
+            _ => false,
+        }
+    }
+}
+
 impl<'a> Debug for Primitive<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

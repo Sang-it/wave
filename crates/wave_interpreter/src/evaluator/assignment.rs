@@ -95,6 +95,13 @@ impl<'a> Runtime<'a> {
                                         Primitive::Number(index) => index as usize,
                                         _ => todo!(),
                                     };
+
+                                    if index >= array.len() {
+                                        return Err(
+                                            diagnostics::IndexOutOfBounds(expression.span).into()
+                                        );
+                                    }
+
                                     array[index] = right_eval;
                                     environment
                                         .borrow_mut()
