@@ -71,6 +71,7 @@ pub enum Kind {
     Extends,
     Super,
     New,
+    Import,
 }
 
 use self::Kind::*;
@@ -157,6 +158,7 @@ impl Kind {
             Extends => "extends",
             Super => "super",
             New => "new",
+            Import => "import",
         }
     }
 

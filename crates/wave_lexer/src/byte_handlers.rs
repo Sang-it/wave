@@ -296,6 +296,7 @@ const L_F: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
 
 const L_I: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     "f" => Kind::If,
+    "mport" => Kind::Import,
     _ => Kind::Ident,
 };
 
