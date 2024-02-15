@@ -31,6 +31,7 @@ impl<'a> Runtime<'a> {
             }
             Statement::BreakStatement(_) => Ok(Primitive::Break),
             Statement::ContinueStatement(_) => Ok(Primitive::Continue),
+            _ => todo!(),
         }
     }
 
