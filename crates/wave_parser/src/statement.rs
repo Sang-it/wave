@@ -52,6 +52,10 @@ impl<'a> Parser<'a> {
             Kind::Let => self.parse_variable_statement(stmt_ctx),
             Kind::Return => self.parse_return_statement(),
             Kind::Class => self.parse_class_statement(stmt_ctx, start_span),
+            Kind::Import if !matches!(self.peek_kind(), Kind::Dot | Kind::LParen) => {
+                self.parse_import_declaration()
+            }
+
             _ if self.at_function() => self.parse_function_declaration(stmt_ctx),
             _ => self.parse_expression_or_labeled_statement(),
         }

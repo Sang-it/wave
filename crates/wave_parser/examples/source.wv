@@ -1,5 +1,2 @@
-class Foo {
-    constructor(a,b) {
-        super(a,b)
-    }
-}
+import {test, test, test} from "../test"
+

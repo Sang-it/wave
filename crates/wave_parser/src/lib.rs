@@ -8,6 +8,7 @@ mod expression;
 mod function;
 mod grammar;
 mod list;
+mod module;
 mod object;
 mod operator;
 mod statement;

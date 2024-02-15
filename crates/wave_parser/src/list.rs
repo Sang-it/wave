@@ -1,5 +1,8 @@
 use wave_allocator::Vec;
-use wave_ast::ast::{Argument, ArrayExpressionElement, ClassElement, Expression, FormalParameter};
+use wave_ast::ast::{
+    Argument, ArrayExpressionElement, ClassElement, Expression, FormalParameter,
+    ImportDeclarationSpecifier,
+};
 use wave_diagnostics::Result;
 use wave_lexer::Kind;
 use wave_span::Span;
@@ -229,6 +232,33 @@ impl<'a> NormalList<'a> for ClassElements<'a> {
         let element = p.parse_class_element()?;
 
         self.elements.push(element);
+        Ok(())
+    }
+}
+
+pub struct ImportSpecifierList<'a> {
+    pub import_specifiers: Vec<'a, ImportDeclarationSpecifier>,
+}
+
+impl<'a> SeparatedList<'a> for ImportSpecifierList<'a> {
+    fn new(p: &Parser<'a>) -> Self {
+        Self {
+            import_specifiers: p.ast.new_vec(),
+        }
+    }
+
+    fn open(&self) -> Kind {
+        Kind::LCurly
+    }
+
+    fn close(&self) -> Kind {
+        Kind::RCurly
+    }
+
+    fn parse_element(&mut self, p: &mut Parser<'a>) -> Result<()> {
+        let import_specifier = p.parse_import_specifier()?;
+        let specifier = ImportDeclarationSpecifier::ImportSpecifier(import_specifier);
+        self.import_specifiers.push(specifier);
         Ok(())
     }
 }

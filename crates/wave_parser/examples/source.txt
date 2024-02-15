@@ -1,115 +1,52 @@
 {
   "type": "Program",
   "start": 0,
-  "end": 62,
+  "end": 42,
   "body": [
     {
-      "type": "ClassDeclaration",
+      "type": "ImportDeclaration",
       "start": 0,
-      "end": 61,
-      "id": {
-        "type": "BindingIdentifier",
-        "start": 6,
-        "end": 9,
-        "name": "Foo"
-      },
-      "superClass": null,
-      "body": {
-        "type": "ClassBody",
-        "start": 10,
-        "end": 61,
-        "body": [
-          {
-            "type": "MethodDefinition",
-            "start": 16,
-            "end": 59,
-            "key": {
-              "type": "IdentifierName",
-              "start": 16,
-              "end": 27,
-              "name": "constructor"
-            },
-            "value": {
-              "type": "FunctionExpression",
-              "start": 27,
-              "end": 59,
-              "id": null,
-              "params": {
-                "type": "FormalParameters",
-                "start": 27,
-                "end": 32,
-                "kind": "FormalParameter",
-                "items": [
-                  {
-                    "type": "FormalParameter",
-                    "start": 28,
-                    "end": 29,
-                    "pattern": {
-                      "type": "BindingPattern",
-                      "kind": {
-                        "type": "BindingIdentifier",
-                        "start": 28,
-                        "end": 29,
-                        "name": "a"
-                      }
-                    }
-                  },
-                  {
-                    "type": "FormalParameter",
-                    "start": 30,
-                    "end": 31,
-                    "pattern": {
-                      "type": "BindingPattern",
-                      "kind": {
-                        "type": "BindingIdentifier",
-                        "start": 30,
-                        "end": 31,
-                        "name": "b"
-                      }
-                    }
-                  }
-                ]
-              },
-              "body": {
-                "type": "FunctionBody",
-                "start": 33,
-                "end": 59,
-                "statements": [
-                  {
-                    "type": "ExpressionStatement",
-                    "start": 43,
-                    "end": 53,
-                    "expression": {
-                      "type": "CallExpression",
-                      "start": 43,
-                      "end": 53,
-                      "callee": {
-                        "type": "Super",
-                        "start": 43,
-                        "end": 48
-                      },
-                      "arguments": [
-                        {
-                          "type": "IdentifierReference",
-                          "start": 49,
-                          "end": 50,
-                          "name": "a"
-                        },
-                        {
-                          "type": "IdentifierReference",
-                          "start": 51,
-                          "end": 52,
-                          "name": "b"
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            },
-            "kind": "constructor"
+      "end": 40,
+      "specifiers": [
+        {
+          "type": "ImportSpecifier",
+          "start": 8,
+          "end": 12,
+          "imported": {
+            "type": "IdentifierName",
+            "start": 8,
+            "end": 12,
+            "name": "test"
           }
-        ]
+        },
+        {
+          "type": "ImportSpecifier",
+          "start": 14,
+          "end": 18,
+          "imported": {
+            "type": "IdentifierName",
+            "start": 14,
+            "end": 18,
+            "name": "test"
+          }
+        },
+        {
+          "type": "ImportSpecifier",
+          "start": 20,
+          "end": 24,
+          "imported": {
+            "type": "IdentifierName",
+            "start": 20,
+            "end": 24,
+            "name": "test"
+          }
+        }
+      ],
+      "source": {
+        "type": "StringLiteral",
+        "start": 31,
+        "end": 40,
+        "value": "\"../test\""
       }
     }
   ]
