@@ -72,6 +72,7 @@ pub enum Kind {
     Super,
     New,
     Import,
+    From,
 }
 
 use self::Kind::*;
@@ -159,6 +160,7 @@ impl Kind {
             Super => "super",
             New => "new",
             Import => "import",
+            From => "from",
         }
     }
 

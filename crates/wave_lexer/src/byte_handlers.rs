@@ -291,6 +291,7 @@ const L_E: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
 const L_F: ByteHandler = |lexer| match &lexer.identifier_name_handler()[1..] {
     "unction" => Kind::Function,
     "alse" => Kind::False,
+    "rom" => Kind::From,
     _ => Kind::Ident,
 };
 
