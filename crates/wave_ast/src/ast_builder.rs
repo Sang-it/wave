@@ -1,14 +1,5 @@
 use crate::ast::{
-    Argument, ArrayExpression, ArrayExpressionElement, AssignmentExpression, AssignmentTarget,
-    BinaryExpression, BindingIdentifier, BindingPattern, BindingPatternKind, BlockStatement,
-    BreakStatement, CallExpression, Class, ClassBody, ClassElement, ClassType,
-    ComputedMemberExpression, ContinueStatement, Declaration, Expression, ExpressionStatement,
-    FormalParameter, FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType,
-    IdentifierName, IdentifierReference, IfStatement, LogicalExpression, MemberExpression,
-    NewExpression, ParenthesizedExpression, Program, PropertyDefinition, PropertyKey,
-    ReturnStatement, SequenceExpression, SimpleAssignmentTarget, Statement, StaticMemberExpression,
-    Super, ThisExpression, UnaryExpression, UpdateExpression, VariableDeclaration,
-    VariableDeclarationKind, VariableDeclarator, WhileStatement,
+    Argument, ArrayExpression, ArrayExpressionElement, AssignmentExpression, AssignmentTarget, BinaryExpression, BindingIdentifier, BindingPattern, BindingPatternKind, BlockStatement, BreakStatement, CallExpression, Class, ClassBody, ClassElement, ClassType, ComputedMemberExpression, ContinueStatement, Declaration, Expression, ExpressionStatement, FormalParameter, FormalParameterKind, FormalParameters, Function, FunctionBody, FunctionType, IdentifierName, IdentifierReference, IfStatement, ImportDeclaration, ImportDeclarationSpecifier, LogicalExpression, MemberExpression, ModuleDeclaration, NewExpression, ParenthesizedExpression, Program, PropertyDefinition, PropertyKey, ReturnStatement, SequenceExpression, SimpleAssignmentTarget, Statement, StaticMemberExpression, Super, ThisExpression, UnaryExpression, UpdateExpression, VariableDeclaration, VariableDeclarationKind, VariableDeclarator, WhileStatement
 };
 use crate::literal::{BooleanLiteral, NullLiteral, NumberLiteral, StringLiteral};
 use wave_allocator::{Allocator, Box, Vec};
@@ -428,5 +419,22 @@ impl<'a> AstBuilder<'a> {
 
     pub fn function_expression(&self, function: Box<'a, Function<'a>>) -> Expression<'a> {
         Expression::FunctionExpression(function)
+    }
+
+    pub fn module_declaration(&self, decl: ModuleDeclaration<'a>) -> Statement<'a> {
+        Statement::ModuleDeclaration(self.alloc(decl))
+    }
+
+    pub fn import_declaration(
+        &self,
+        span: Span,
+        specifiers: Option<Vec<'a, ImportDeclarationSpecifier>>,
+        source: StringLiteral,
+    ) -> Box<'a, ImportDeclaration<'a>> {
+        self.alloc(ImportDeclaration {
+            span,
+            specifiers,
+            source,
+        })
     }
 }

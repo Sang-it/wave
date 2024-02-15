@@ -1,6 +1,6 @@
 use wave_span::{GetSpan, Span};
 
-use crate::ast::{Declaration, Expression, MemberExpression, Statement};
+use crate::ast::{Declaration, Expression, MemberExpression, ModuleDeclaration, Statement};
 
 impl<'a> GetSpan for Statement<'a> {
     fn span(&self) -> Span {
@@ -13,6 +13,7 @@ impl<'a> GetSpan for Statement<'a> {
             Self::ReturnStatement(stmt) => stmt.span,
             Self::WhileStatement(stmt) => stmt.span,
             Self::Declaration(decl) => decl.span(),
+            Self::ModuleDeclaration(decl) => decl.span(),
         }
     }
 }
@@ -58,6 +59,14 @@ impl<'a> GetSpan for MemberExpression<'a> {
         match self {
             Self::ComputedMemberExpression(expr) => expr.span,
             Self::StaticMemberExpression(expr) => expr.span,
+        }
+    }
+}
+
+impl<'a> GetSpan for ModuleDeclaration<'a> {
+    fn span(&self) -> Span {
+        match self {
+            Self::ImportDeclaration(decl) => decl.span,
         }
     }
 }

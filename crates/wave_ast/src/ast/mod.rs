@@ -6,6 +6,7 @@ mod expression;
 mod function_declaration;
 mod identifier;
 mod member_expression;
+mod module;
 mod variable_declaration;
 
 pub use crate::ast::function_declaration::{
@@ -24,6 +25,10 @@ pub use class::{
 pub use expression::Expression;
 pub use identifier::IdentifierReference;
 pub use member_expression::{ComputedMemberExpression, MemberExpression, StaticMemberExpression};
+pub use module::{
+    ImportDeclaration, ImportDeclarationSpecifier, ImportSpecifier, ModuleDeclaration,
+    ModuleExportName,
+};
 
 use std::hash::Hash;
 use wave_allocator::{Box, Vec};
@@ -62,6 +67,7 @@ pub enum Statement<'a> {
     WhileStatement(Box<'a, WhileStatement<'a>>),
     BreakStatement(Box<'a, BreakStatement>),
     ContinueStatement(Box<'a, ContinueStatement>),
+    ModuleDeclaration(Box<'a, ModuleDeclaration<'a>>),
 }
 
 #[derive(Debug, Hash)]
