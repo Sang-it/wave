@@ -17,6 +17,7 @@ wave_index       = { workspace = true }
 wave_parser      = { workspace = true }
 wave_span        = { workspace = true }
 wave_syntax      = { workspace = true }
+wave_interpreter = { workspace = true }
 
 [features]
 serde = ["wave_ast/serde"]
