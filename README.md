@@ -86,7 +86,7 @@ Planned components:
 - [x] Implement this expressions
 - [x] Implement extend expressions
 - [x] Implement super calls
-- [ ] Implement modules
+- [x] Implement modules
 
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
