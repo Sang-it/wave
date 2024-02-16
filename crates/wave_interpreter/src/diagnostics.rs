@@ -61,3 +61,7 @@ pub struct IndexOutOfBounds(#[label] pub Span);
 #[derive(Debug, Error, Diagnostic)]
 #[error("function 'push' can only be performed on arrays.")]
 pub struct NotAnArray();
+
+#[derive(Debug, Error, Diagnostic)]
+#[error("Failed to import file.")]
+pub struct ImportFailure();

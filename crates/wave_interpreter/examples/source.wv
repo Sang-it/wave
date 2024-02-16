@@ -35,4 +35,3 @@ class Cube extends Rectangle{
 let a = [1,2,3]
 
 print(contains(a,1))
-

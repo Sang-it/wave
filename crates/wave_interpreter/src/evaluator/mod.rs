@@ -5,6 +5,7 @@ pub mod expression;
 pub mod function;
 pub mod literal;
 pub mod member_expression;
+pub mod module;
 pub mod primitive;
 pub mod primitive_operations;
 pub mod statement;

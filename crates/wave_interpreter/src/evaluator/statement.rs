@@ -31,7 +31,9 @@ impl<'a> Runtime<'a> {
             }
             Statement::BreakStatement(_) => Ok(Primitive::Break),
             Statement::ContinueStatement(_) => Ok(Primitive::Continue),
-            _ => todo!(),
+            Statement::ModuleDeclaration(import_stmt) => {
+                self.eval_import_statement(import_stmt, environment)
+            }
         }
     }
 

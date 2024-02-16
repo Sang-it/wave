@@ -69,7 +69,7 @@ impl<'a> Runtime<'a> {
 
     pub fn eval(&self) -> Result<Primitive<'a>> {
         let environment = Rc::new(RefCell::new(Environment::default()));
-        self.eval_program(&self.program, environment)
+        self.eval_program(&self.program, environment.clone())
     }
 
     pub fn eval_program(
@@ -82,5 +82,11 @@ impl<'a> Runtime<'a> {
             result = self.eval_statement(statement, Rc::clone(&environment))?;
         }
         Ok(result)
+    }
+
+    pub fn eval_environment(&self) -> Result<Rc<RefCell<Environment<'a>>>> {
+        let environment = Rc::new(RefCell::new(Environment::default()));
+        self.eval_program(&self.program, environment.clone())?;
+        Ok(environment)
     }
 }

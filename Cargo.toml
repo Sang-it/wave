@@ -33,6 +33,7 @@ wave_diagnostics = { version = "0.1.0", path = "crates/wave_diagnostics" }
 wave_syntax      = { version = "0.1.0", path = "crates/wave_syntax" }
 wave_index       = { version = "0.1.0", path = "crates/wave_index" }
 wave_parser      = { version = "0.1.0", path = "crates/wave_parser" }
+wave_interpreter = { version = "0.1.0", path = "crates/wave_interpreter" }
 
 bumpalo           = { version = "3.14.0" }
 compact_str       = { version = "0.7.1" }

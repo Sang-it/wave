@@ -480,6 +480,7 @@ dependencies = [
  "wave_ast",
  "wave_diagnostics",
  "wave_index",
+ "wave_interpreter",
  "wave_parser",
  "wave_span",
  "wave_syntax",
